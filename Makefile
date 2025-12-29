@@ -32,50 +32,53 @@ OBJD = double.o file.o lispd.o
 BINARIES = flisp flispd
 LIBRARIES = libflisp.a libflispd.a
 RC_FILES = init.lsp
-HEADER = flisp.h
+HEADER = lisp.h file.h double.h
 
 LISPLIB = core.lsp flisp.lsp string.lsp file.lsp
-SOURCES = flisp.c lisp.c flisp.h double.c double.h file.c file.h
+SOURCES = flisp.c lisp.c lisp.h double.c double.h file.c file.h
 
-DOCFILES = README.md doc/flisp.html doc/develop.html doc/implementation.html
+DOCFILES = README.md doc/lisp.html doc/develop.html doc/implementation.html
 MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
 
 .SUFFIXES: .lsp .sht  .md .html
 .sht.lsp:
 	./sht $*.sht >$@
 
-all: $(BINARIES) $(LIBRARIES) $(PACKAGE).pc
+all: $(BINARIES) $(LIBRARIES) flisp.pc flispd.pc
 
 debug: CPPFLAGS += -UNDEBUG -g
 debug: $(BINARIES) $(LIBRARIES)
 
-double.o: double.c double.h flisp.h
+double.o: double.c double.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $<
 
-file.o: file.c file.h flisp.h
+file.o: file.c file.h lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 flisp: flisp.o $(OBJ) init.lsp
 	$(LD) $(LDFLAGS) -o $@ $< $(OBJ)
 
-flisp.o: flisp.c flisp.h file.h
+flisp.o: flisp.c lisp.h file.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $<
 
 flispd: flispd.o $(OBJD) init.lsp
 	$(LD) $(LDFLAGS) -o $@ $< $(OBJD) -lm
 
-flispd.o: flisp.c flisp.h double.h file.h
+flispd.o: flisp.c lisp.h double.h file.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@
 
 flisp.pc: flisp.pc.sht
 	PREFIX=$(PREFIX) ./sht $< > $@
 
+flispd.pc: flispd.pc.sht
+	PREFIX=$(PREFIX) ./sht $< > $@
+
 init.lsp: init.sht core.lsp
 
-lisp.o: lisp.c flisp.h
+lisp.o: lisp.c lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@ -lc
 
-lispd.o: lisp.c flisp.h
+lispd.o: lisp.c lisp.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -D FLISP_DOUBLE_EXTENSION -c $< -o $@ -lc
 
 libflisp.a: lisp.o file.o
@@ -155,7 +158,7 @@ strip: $(BINARIES) FORCE
 	strip $(BINARIES)
 
 clean: FORCE
-	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES) flisp.o flispd.o flisp.pc
+	-$(RM) -f $(OBJ) $(OBJD) $(BINARIES) $(LIBRARIES) $(RC_FILES) flisp.o flispd.o flisp.pc flispd.pc
 	-$(RM) -rf doxygen
 	-$(RM) -f $(MOREDOCS)
 	-$(RM) -f f.log
@@ -184,13 +187,13 @@ install-lib: $(RC_FILES) $(LISPLIB) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(CP) $(RC_FILES) $(LISPLIB) $(DESTDIR)$(DATADIR)/$(PACKAGE)
 
-install-dev: $(LIBRARIES) $(HEADER) FORCE
+install-dev: install-lib $(LIBRARIES) $(HEADER) flisp.pc flispd.pc FORCE
 	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)
 	-$(CP) $(LIBRARIES) $(DESTDIR)$(LIBDIR)
-	-$(MKDIR) -p $(DESTDIR)$(INCDIR)
-	-$(CP) $(HEADER) $(DESTDIR)$(INCDIR)
+	-$(MKDIR) -p $(DESTDIR)$(INCDIR)/$(PACKAGE)
+	-$(CP) $(HEADER) $(DESTDIR)$(INCDIR)/$(PACKAGE)
 	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)/pkgconfig
-	-$(CP) $(PACKAGE).pc $(DESTDIR)$(LIBDIR)/pkgconfig
+	-$(CP) flisp.pc flispd.pc $(DESTDIR)$(LIBDIR)/pkgconfig
 
 uninstall: FORCE
 	-(cd  $(DESTDIR)$(BINDIR) && $(RM) -f $(BINARIES))

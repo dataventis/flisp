@@ -1,7 +1,7 @@
 #ifndef DOUBLE_H
 #define DOUBLE_H
 
-#include "flisp.h"
+#include "lisp.h"
 
 extern Object *newDouble(Interpreter *, double);
 extern Object *readDouble(Interpreter *);

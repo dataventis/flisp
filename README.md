@@ -14,7 +14,7 @@ fLisp is embedded into the
 
 ## Why the name fLisp
 
-The choice felt on "fLisp", since femtolisp is already taken (by a not
+The choice fell on "fLisp", since femtolisp is already taken (by a not
 so "femto" Lisp interpreter). Lower case "f" stands for the femto
 metric prefix which represents 10^-15 — a very small number.  fLisp is
 meant to be very small.

@@ -15,7 +15,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "flisp.h"
+#include "lisp.h"
 
 #ifdef FLISP_DOUBLE_EXTENSION
 #include "double.h"

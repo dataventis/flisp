@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "flisp.h"
+#include "lisp.h"
 
 extern void lisp_file_register(Interpreter *);
 

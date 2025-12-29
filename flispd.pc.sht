@@ -3,9 +3,10 @@ exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
 
-Name: fLisp
-Description: fLisp - a tiny, embeddable Lisp language interpreter
+Name: fLispd
+Description: fLisp - a tiny, embeddable Lisp language interpreter with double arithmetic support
 Version: 0.14
 URL: https://gitlab.com/jorge-leon/flisp
-Libs: -L\${libdir} -lflisp
+Libs: -L\${libdir} -lflispd
+Libs.private: -lm
 Cflags: -I\${includedir}

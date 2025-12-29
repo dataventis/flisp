@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "flisp.h"
+#include "lisp.h"
 #include "double.h"
 
 /* Constants */
