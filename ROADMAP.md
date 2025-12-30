@@ -4,7 +4,6 @@
 
 ## Next
 
-- GC starting with the first loaded symbol.
 - Make logging mask, and suppress catch messages by default
 - Implement more `(interp subcommand[arg..])` introspection and configuration commands.
   - (flisp output[ fd])
@@ -24,6 +23,7 @@
     and `splice-unquote`.
 - Size reduction:
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
+- Tap the potential of the in code documentation via Doxygen.
 - Cleanup cerf: not so easy to do.
 - Hash
   - Add new 'hash' field as uintptr_t to Lisp object struct type union.
@@ -46,6 +46,7 @@
 
 
 ## flisp 0.14
+- GC starting with the first loaded symbol.
 - Extensions are loaded dynamically
 - double extension and file extension are optional
 - Fixed: (cond ('(0))) tries to evaluate (0) but should return (0)

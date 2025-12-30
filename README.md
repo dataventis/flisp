@@ -22,37 +22,45 @@ meant to be very small.
 
 ## Goals of fLisp
 
-- To be the smallest embeddable Lisp interpreter yet powerful enough  
+- To be the smallest embeddable Lisp interpreter yet powerful enough
   to drive real world applications.
 - To be rock stable, predictable and consistent.
 - To consume as little resources as possible.
-- To be easy to understand without extensive study (to encourage further  
+- To be easy to understand without extensive study (to encourage further
   experimentation).
 
 Size by version:
 
 	Version	Binary	C-Lines/sloc/Files	Lisp-Lines/sloc/Files
 	0.13	85584	3.6k/2.4k/6			373/272/3
-	0.14    85744   3.6k/2.4k/6			428/300/2
+	0.14    83088   3.7k/2.4k/7			607/354/5
 
 
 ## Building
 
-fLisp should be buildable with only the standard C libraries.
+fLisp only depends on the standard C libraries.
 
-    make flisp
+The default Makefile target:
 
-# TODO
+	make all
 
-## Future
+Creates:
+- flisp .. The flisp command line utility.
+- flispd .. The command line utility with floating point (double) support.
+- libflisp.a and libflispd.a .. The libraries for embedding fLisp in other applications.
 
-- Implement the backtick and comma reader macros. See [5]
-- Adapt build system to be able to un/install `flisp` binary. Includes  
-  preparing a Lisp library and a startup file.
-- Extend file extension to be usable for Lisp programs.
-- Refactor complete core to be able to run any number of interpreters.
-- Tap the potential of the in code documentation via Doxygen.
+	make install
+	make install-dev
 
+Install the command line utilities, documentation and Lisp libraries
+in the first case, or the libraries, header files and pkg-config files
+in the second case.
+
+	make dep
+
+Builds the Debian packages `flisp` and `flisp-dev`.  The first
+installs the command line utilities, the Lisp libraries and the documentation, the second
+only the files required for development.
 
 # References
 
