@@ -25,7 +25,7 @@ Object *primitiveFflush(Interpreter *interp, Object** args, Object **env)
         if (FLISP_ARG_ONE == t)
             fd = NULL;
         else {
-            CHECK_TYPE(FLISP_ARG_ONE, type_stream,  "(fflush[ stream]) - stream");
+            FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream,  "(fflush[ stream]) - stream");
             if (FLISP_ARG_ONE->fd == NULL)
                 exception(interp, invalid_value, "(fflush[ stream]) - stream already closed");
             fd = FLISP_ARG_ONE->fd;
@@ -55,12 +55,12 @@ Object *primitiveFseek(Interpreter *interp, Object** args, Object **env)
         if (fd == NULL)
             exception(interp, invalid_value, "(fseek stream offset[ relativep]) - input stream not set");
     } else {
-        CHECK_TYPE(FLISP_ARG_ONE, type_stream,  "(fseek stream offset) - stream");
+        FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream,  "(fseek stream offset) - stream");
         if (FLISP_ARG_ONE->fd == NULL)
             exception(interp, invalid_value, "(fseek stream) - stream already closed");
         fd = FLISP_ARG_ONE->fd;
     }
-    CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(fseek stream offset) - offset");
+    FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(fseek stream offset) - offset");
 
     if (FLISP_HAS_ARG_THREE && FLISP_ARG_THREE != nil)
         whence = SEEK_CUR;
@@ -132,7 +132,7 @@ Object *primitiveFgetc(Interpreter *interp, Object** args, Object **env)
     FILE *fd = interp->input.fd;
 
     if (FLISP_HAS_ARGS) {
-        CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgetc[ stream] - stream)");
+        FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgetc[ stream] - stream)");
         if (FLISP_ARG_ONE->fd == NULL)
             exception(interp, invalid_value, "(fgetc[ stream]) - stream already closed");
         fd = FLISP_ARG_ONE->fd;
@@ -167,9 +167,9 @@ Object *primitiveFungetc(Interpreter *interp, Object** args, Object **env)
     int c;
     FILE *fd = interp->input.fd;
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(fungetc char[ stream] - char)");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(fungetc char[ stream] - char)");
     if (FLISP_HAS_ARG_TWO) {
-        CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(fungetc char[ stream] - stream)");
+        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_stream, "(fungetc char[ stream] - stream)");
         if (FLISP_ARG_TWO->fd == NULL)
             exception(interp, invalid_value, "(fungetc char [ stream]) - stream already closed");
         fd = FLISP_ARG_TWO->fd;
@@ -201,7 +201,7 @@ Object *primitiveFgets(Interpreter *interp, Object** args, Object **env)
     FILE *fd = interp->input.fd;
 
     if (FLISP_HAS_ARGS) {
-        CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgets[ stream] - stream)");
+        FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_stream, "(fgets[ stream] - stream)");
         if (FLISP_ARG_ONE->fd == NULL)
             exception(interp, invalid_value, "(fgets[ stream]) - stream already closed");
         fd = FLISP_ARG_ONE->fd;
@@ -251,7 +251,7 @@ Object *primitiveFstat(Interpreter *interp, Object** args, Object **env)
     Object *object;
     char *type;
 
-    CHECK_TYPE(FLISP_ARG_ONE, type_string,  "(fstat path[ linkp]) - stream");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string,  "(fstat path[ linkp]) - stream");
 
     if (FLISP_HAS_ARG_TWO && FLISP_ARG_TWO != nil)
         result = lstat(FLISP_ARG_ONE->string, &info);
@@ -357,9 +357,9 @@ Object *primitiveFttyP(Interpreter *interp, Object** args, Object **env)
 Object *primitiveMkdir(Interpreter *interp, Object** args, Object **env)
 {
     mode_t mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-    CHECK_TYPE(FLISP_ARG_ONE, type_string,  "(fmkdir path[ mode) - path");
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string,  "(fmkdir path[ mode) - path");
     if (FLISP_HAS_ARG_TWO) {
-        CHECK_TYPE(FLISP_ARG_TWO, type_integer,  "(fmkdir path[ mode) - mode");
+        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_integer,  "(fmkdir path[ mode) - mode");
         mode = FLISP_ARG_TWO->integer;
     }
     if (mkdir(FLISP_ARG_ONE->string, mode) == -1) {
@@ -499,11 +499,11 @@ Primitive file_primitives[] = {
     {"getcwd",    0, 0, 0,           fl_getcwd},
 };
 
-void lisp_file_register(Interpreter *interp)
+void flisp_file_register(Interpreter *interp)
 {
     int i;
     for (i = 0; i < sizeof(file_primitives) / sizeof(file_primitives[0]); i++)
-             lisp_register_primitive(interp, &file_primitives[i]);
+             flisp_register_primitive(interp, &file_primitives[i]);
 }
 
 /*

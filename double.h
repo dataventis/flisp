@@ -19,7 +19,7 @@ extern Object *doubleLessEqual(Interpreter *, Object **, Object **);
 extern Object *doubleGreater(Interpreter *, Object **, Object **);
 extern Object *doubleGreaterEqual(Interpreter *, Object **, Object **);
 
-extern void lisp_double_register(Interpreter *);
+extern void flisp_double_register(Interpreter *);
 
 #endif
 /*

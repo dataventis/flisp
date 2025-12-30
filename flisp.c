@@ -36,18 +36,18 @@ int main(int argc, char **argv)
         if ((debug_fd = fopen(debug_file, "w")) == NULL)
             fatal("failed to open debug file");
 
-    interp = lisp_new(0, argv, NULL, input_fd, stdout, debug_fd);
+    interp = flisp_new(0, argv, NULL, input_fd, stdout, debug_fd);
     if (interp == NULL)
         fatal("fLisp interpreter initialization failed");
 
 #ifdef FLISP_DOUBLE_EXTENSION
-    lisp_double_register(interp);
+    flisp_double_register(interp);
 #endif
-    lisp_file_register(interp);
+    flisp_file_register(interp);
 
-    lisp_eval(interp, NULL);
+    flisp_eval(interp, NULL);
     if (FLISP_RESULT_CODE(interp) != nil) {
-        lisp_write_error(interp, stderr);
+        flisp_write_error(interp, stderr);
         return 1;
     }
     return 0;

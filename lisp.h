@@ -125,7 +125,7 @@ typedef struct Interpreter {
     struct Interpreter *next;    /* linked list of interpreters */
 } Interpreter;
 
-/*@null@*/extern Interpreter *lisp_interpreters;
+/*@null@*/extern Interpreter *flisp_interpreters;
 
 // PROGRAMMING INTERFACE ////////////////////////////////////////////////
 /* Constants */
@@ -160,7 +160,7 @@ extern Object *file_exists;
 extern Object *read_only;
 extern Object *is_directory;
 /* utility */
-extern Object *lisp_empty_string;
+extern Object *flisp_empty_string;
 
 /* "Object" type for initializing constants with long names.
  * Note: currently wrong-number-of-arguments is the longest, if you
@@ -215,20 +215,20 @@ void fl_debug(Interpreter *, char *, ...);
 #define FLISP_HAS_ARG_TWO ((*args)->cdr != nil)
 #define FLISP_HAS_ARG_THREE ((*args)->cdr->cdr != nil)
 
-#define CHECK_TYPE(PARAM, TYPE, SIGNATURE) \
+#define FLISP_CHECK_TYPE(PARAM, TYPE, SIGNATURE) \
     if (PARAM->type != TYPE)               \
         exceptionWithObject(interp, PARAM, wrong_type_argument, \
                             SIGNATURE " expected %s, got: %s", TYPE->string, PARAM->type->string)
 
 // PUBLIC INTERFACE ///////////////////////////////////////////////////////
-extern Interpreter *lisp_new(size_t size, char **, char*, FILE*, FILE*, FILE*);
-extern void lisp_destroy(Interpreter *);
-extern void lisp_eval(Interpreter *, char *);
-extern void lisp_write_object(Interpreter *, FILE *, Object *, bool);
-extern void lisp_write_error(Interpreter *, FILE *);
+extern Interpreter *flisp_new(size_t size, char **, char*, FILE*, FILE*, FILE*);
+extern void flisp_destroy(Interpreter *);
+extern void flisp_eval(Interpreter *, char *);
+extern void flisp_write_object(Interpreter *, FILE *, Object *, bool);
+extern void flisp_write_error(Interpreter *, FILE *);
 
-extern void lisp_register_constant(Interpreter *, Object *, Object *);
-extern void lisp_register_primitive(Interpreter *, Primitive *);
+extern void flisp_register_constant(Interpreter *, Object *, Object *);
+extern void flisp_register_primitive(Interpreter *, Primitive *);
 
 #define FLISP_RESULT_CODE(INTERPRETER) INTERPRETER->error
 #define FLISP_RESULT_MESSAGE(INTERPRETER) ((Object *)&INTERPRETER->message)

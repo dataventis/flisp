@@ -85,11 +85,11 @@ Primitive double_primitives[] = {
     {"d>=",     2,  2, TYPE_DOUBLE, doubleGreaterEqual},
 };
 
-void lisp_double_register(Interpreter *interp)
+void flisp_double_register(Interpreter *interp)
 {
     int i;
     for (i = 0; i < sizeof(double_primitives) / sizeof(double_primitives[0]); i++)
-        lisp_register_primitive(interp, &double_primitives[i]);
+        flisp_register_primitive(interp, &double_primitives[i]);
 }
 
 /*
