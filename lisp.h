@@ -45,29 +45,9 @@ typedef struct Object Object;
 typedef struct Interpreter Interpreter;
 typedef Object *(*LispEval) (Interpreter *, Object **, Object **);
 
-#if 0
-/* Note: Only used, because we do not know how to statically
- *       initialize the required Lisp type objects
- */
-typedef enum ObjectType {
-    TYPE_MOVED,
-    TYPE_INTEGER,
-    TYPE_DOUBLE,
-    TYPE_STRING,
-    TYPE_SYMBOL,
-    TYPE_CONS,
-    TYPE_LAMBDA,
-    TYPE_MACRO,
-    TYPE_PRIMITIVE,
-    TYPE_ENV,
-    TYPE_STREAM,
-} ObjectType;
-#endif
-
 typedef struct Primitive {
     char *name;
     int nMinArgs, nMaxArgs;
-//    ObjectType type_check;
     Object * argsType;
     LispEval eval;
 } Primitive;
@@ -232,7 +212,6 @@ extern void flisp_write_error(Interpreter *, FILE *);
 
 extern void flisp_register_constant(Interpreter *, Object *, Object *);
 extern bool flisp_register_primitive(Interpreter *, char *, int, int, Object *, LispEval);
-//extern void flisp_register_pr(Interpreter *, Primitive *);
 
 #define FLISP_RESULT_CODE(INTERPRETER) INTERPRETER->error
 #define FLISP_RESULT_MESSAGE(INTERPRETER) ((Object *)&INTERPRETER->message)
