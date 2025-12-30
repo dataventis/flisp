@@ -6,7 +6,6 @@
  */
 
 #include <sys/mman.h>
-#include <assert.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -2243,7 +2242,9 @@ Object *stringAppend(Interpreter *interp, Object **args, Object **env)
     int len2 = strlen(FLISP_ARG_TWO->string);
     char *new = strdup(FLISP_ARG_ONE->string);
     new = realloc(new, len1 + len2 + 1);
-    assert(new != NULL);
+    if (new == NULL)
+        exceptionWithObject(interp, FLISP_ARG_TWO, out_of_memory,
+                            "(string-append s a) - failed to allocate memory for a");
     memcpy(new + len1, FLISP_ARG_TWO->string, len2);
     new[len1 + len2] = '\0';
 
