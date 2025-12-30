@@ -37,8 +37,8 @@ HEADER = lisp.h file.h double.h
 LISPLIB = core.lsp flisp.lsp string.lsp file.lsp
 SOURCES = flisp.c lisp.c lisp.h double.c double.h file.c file.h
 
-DOCFILES = README.md doc/flisp.html doc/develop.html doc/implementation.html
-MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
+DOCFILES = README.md doc/flisp.html doc/develop.html doc/history.html doc/implementation.html
+MOREDOCS = README.html doc/flisp.md doc/develop.md doc/history.md doc/implementation.md
 
 .SUFFIXES: .lsp .sht  .md .html
 .sht.lsp:
@@ -88,16 +88,23 @@ libflispd.a: lisp.o file.o double.o
 	$(AR) rcs $@ $^
 
 
-# Requires pandoc
+# Requires pandoc and tidy
 doc: $(MOREDOCS)
 
 doc/flisp.md: doc/flisp.html h2m.lua
+	tidy -m -i2 -w 120 $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 doc/develop.md: doc/develop.html h2m.lua
+	tidy -m -i2 -w 120 $<
+	pandoc -o $@ -t gfm -L h2m.lua $<
+
+doc/history.md: doc/history.html h2m.lua
+	tidy -m -i2 -w 120 $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 doc/implementation.md: doc/implementation.html h2m.lua
+	tidy -m -i2 -w 120 $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 README.html: README.md
