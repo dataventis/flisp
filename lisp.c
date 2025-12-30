@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1561,7 +1562,7 @@ Object *evalCatch(Interpreter *interp, Object **args, Object **env)
 }
 
 
-Primitive primitives[];
+//Primitive primitives[];
 
 Object *evalExpr(Interpreter *interp, Object ** object, Object **env)
 {
@@ -1638,12 +1639,13 @@ Object *evalExpr(Interpreter *interp, Object ** object, Object **env)
                 GC_RETURN(evalCatch(interp, gcArgs, gcEnv));
             default:
                 *gcArgs = evalList(interp, gcArgs, gcEnv);
-                if (primitive->type_check)
+                nArgs = 1;
+                if (primitive->argsType != nil)
                     for (args = *gcArgs; args != nil; args = args->cdr, nArgs++)
-                        if (args->car->type != *flisp_object_type[primitive->type_check])
+                        if (args->car->type != primitive->argsType)
                             exceptionWithObject(interp, args->car, wrong_type_argument, "(%s args) - arg %d expected %s, got: %s",
-                                                primitive->name, nArgs-1,
-                                                (*flisp_object_type[primitive->type_check])->string,
+                                                primitive->name, nArgs,
+                                                primitive->argsType->string,
                                                 args->car->type->string
                                 );
 #if FLISP_TRACE
@@ -2380,65 +2382,6 @@ Object *primitiveInterp(Interpreter *interp, Object **args, Object **env)
                             "(flisp cmd[ arg..]) - unknown command");
 }
 
-Primitive primitives[] = {
-    {"quote",         1,  1, 0, (LispEval) PRIMITIVE_QUOTE /* special form */ },
-    {"bind",          2,  3, 0, (LispEval) PRIMITIVE_BIND  /* special form */ },
-    {"progn",         0, -1, 0, (LispEval) PRIMITIVE_PROGN /* special form */ },
-    {"cond",          0, -1, 0, (LispEval) PRIMITIVE_COND  /* special form */ },
-    {"lambda",        1, -1, 0, (LispEval) PRIMITIVE_LAMBDA /* special form */ },
-    {"macro",         1, -1, 0, (LispEval) PRIMITIVE_MACRO  /* special form */ },
-    {"macroexpand-1", 1,  2, 0, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ },
-    {"catch",         1,  1, 0, (LispEval) PRIMITIVE_CATCH  /*special form */ },
-    {"null",          1,  1, 0,            primitiveNullP},
-    {"type-of",       1,  1, 0,            primitiveTypeOf},
-    {"consp",         1,  1, 0,            primitiveConsP},
-    {"intern",        1,  1, TYPE_STRING,  primitiveIntern},
-    {"symbol-name",   1,  1, TYPE_SYMBOL,  primitiveSymbolName},
-    {"same",          2,  2, 0,            primitiveSame},
-    {"car",           1,  1, 0,            primitiveCar}, /* Note: nil|cons */
-    {"cdr",           1,  1, 0,            primitiveCdr}, /* Note: nil|cons */
-    {"cons",          2,  2, 0,            primitiveCons},
-    {"open",          1,  2, TYPE_STRING,  primitiveFopen},
-    {"close",         1,  1, TYPE_STREAM,  primitiveFclose},
-    {"file-info",     1,  1, TYPE_STREAM,  primitiveFinfo},
-    {"read",          0,  2, 0,            primitiveRead},
-    {"eval",          1,  1, 0,            primitiveEval},
-    {"write",         1,  3, 0,            primitiveWrite},
-#if DEBUG_GC
-    {"gc",            0,  0, 0,            primitiveGc},
-    {"gctrace",       0,  0, 0,            primitiveGcTrace},
-    {"symbols",       0,  0, 0,            primitiveSymbols},
-    {"global",        0,  0, 0,            primitiveGlobal},
-    {"env",           0,  0, 0,            primitiveEnv},
-#endif
-    {"throw",         2,  3, 0,            primitiveThrow},
-    {"i+",            2,  2, TYPE_INTEGER, integerAdd},
-    {"i-",            2,  2, TYPE_INTEGER, integerSubtract},
-    {"i*",            2,  2, TYPE_INTEGER, integerMultiply},
-    {"i/",            2,  2, TYPE_INTEGER, integerDivide},
-    {"i%",            2,  2, TYPE_INTEGER, integerMod},
-    {"i=",            2,  2, TYPE_INTEGER, integerEqual},
-    {"i<",            2,  2, TYPE_INTEGER, integerLess},
-    {"i<=",           2,  2, TYPE_INTEGER, integerLessEqual},
-    {"i>",            2,  2, TYPE_INTEGER, integerGreater},
-    {"i>=",           2,  2, TYPE_INTEGER, integerGreaterEqual},
-    {"&",             2,  2, TYPE_INTEGER, integerAnd},
-    {"|",             2,  2, TYPE_INTEGER, integerOr},
-    {"^",             2,  2, TYPE_INTEGER, integerXor},
-    {"<<",            2,  2, TYPE_INTEGER, integerShiftLeft},
-    {">>",            2,  2, TYPE_INTEGER, integerShiftRight},
-    {"~",             1,  1, TYPE_INTEGER, integerNot},
-    {"string-equal",  2,  2, TYPE_STRING,  stringEqual},
-    {"string-length", 1,  1, TYPE_STRING,  stringLength},
-    {"string-append", 2,  2, TYPE_STRING,  stringAppend},
-    {"substring",     1,  3, 0,            stringSubstring},
-    {"string-search", 2,  2, TYPE_STRING,  stringSearch},
-    {"ascii",         1,  1, TYPE_INTEGER, asciiToString},
-    {"ascii->number", 1,  1, TYPE_STRING,  asciiToInteger},
-    {"interp",         1, -1, 0,           primitiveInterp},
-};
-
-
 // MAIN ///////////////////////////////////////////////////////////////////////
 
 void flisp_register_constant(Interpreter *interp, Object *symbol, Object *value)
@@ -2447,15 +2390,90 @@ void flisp_register_constant(Interpreter *interp, Object *symbol, Object *value)
     envSet(interp, &symbol, &value, &interp->global, true);
     interp->symbols = newCons(interp, &symbol, &interp->symbols);
 }
-void flisp_register_primitive(Interpreter * interp, Primitive *primitive)
+
+bool flisp_register_primitive(Interpreter *interp, char *name,
+                              int min_args, int max_args, Object *args_type,
+                              LispEval func)
 {
+    Primitive *primitive = malloc(sizeof(Primitive));
+    if (primitive == NULL)
+        return false;
+    primitive->name = strdup(name);
+    if (primitive->name == NULL)
+        return false;
+    primitive->nMinArgs = min_args;
+    primitive->nMaxArgs = max_args;
+    primitive->argsType = args_type;
+    primitive->eval = func;
+
     GC_CHECKPOINT;
     GC_TRACE(gcSymbol, newSymbol(interp, primitive->name));
     Object *p = newPrimitive(interp, primitive);
     GC_RELEASE;
     envSet(interp, gcSymbol, &p, &interp->global, true);
+    return true;
 }
 
+bool flisp_primitives_register(Interpreter *interp)
+{
+    return
+        flisp_register_primitive(   interp, "quote",         1,  1, nil, (LispEval) PRIMITIVE_QUOTE)
+        && flisp_register_primitive(interp, "bind",          2,  3, nil, (LispEval) PRIMITIVE_BIND  /* special form */ )
+        && flisp_register_primitive(interp, "progn",         0, -1, nil, (LispEval) PRIMITIVE_PROGN /* special form */ )
+        && flisp_register_primitive(interp, "cond",          0, -1, nil, (LispEval) PRIMITIVE_COND  /* special form */ )
+        && flisp_register_primitive(interp, "lambda",        1, -1, nil, (LispEval) PRIMITIVE_LAMBDA /* special form */ )
+        && flisp_register_primitive(interp, "macro",         1, -1, nil, (LispEval) PRIMITIVE_MACRO  /* special form */ )
+        && flisp_register_primitive(interp, "macroexpand-1", 1,  2, nil, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ )
+        && flisp_register_primitive(interp, "catch",         1,  1, nil, (LispEval) PRIMITIVE_CATCH  /*special form */ )
+        && flisp_register_primitive(interp, "null",          1,  1, nil,            primitiveNullP)
+        && flisp_register_primitive(interp, "type-of",       1,  1, nil,            primitiveTypeOf)
+        && flisp_register_primitive(interp, "consp",         1,  1, nil,            primitiveConsP)
+        && flisp_register_primitive(interp, "intern",        1,  1, type_string,    primitiveIntern)
+        && flisp_register_primitive(interp, "symbol-name",   1,  1, type_symbol,    primitiveSymbolName)
+        && flisp_register_primitive(interp, "same",          2,  2, nil,            primitiveSame)
+        && flisp_register_primitive(interp, "car",           1,  1, nil,            primitiveCar) /* Note: nil|cons */
+        && flisp_register_primitive(interp, "cdr",           1,  1, nil,            primitiveCdr) /* Note: nil|cons */
+        && flisp_register_primitive(interp, "cons",          2,  2, nil,            primitiveCons)
+        && flisp_register_primitive(interp, "open",          1,  2, type_string,    primitiveFopen)
+        && flisp_register_primitive(interp, "close",         1,  1, type_stream,    primitiveFclose)
+        && flisp_register_primitive(interp, "file-info",     1,  1, type_stream,    primitiveFinfo)
+        && flisp_register_primitive(interp, "read",          0,  2, nil,            primitiveRead)
+        && flisp_register_primitive(interp, "eval",          1,  1, nil,            primitiveEval)
+        && flisp_register_primitive(interp, "write",         1,  3, nil,            primitiveWrite)
+#if DEBUG_GC
+        && flisp_register_primitive(interp, "gc",            0,  0, nil,            primitiveGc)
+        && flisp_register_primitive(interp, "gctrace",       0,  0, nil,            primitiveGcTrace)
+        && flisp_register_primitive(interp, "symbols",       0,  0, nil,            primitiveSymbols)
+        && flisp_register_primitive(interp, "global",        0,  0, nil,            primitiveGlobal)
+        && flisp_register_primitive(interp, "env",           0,  0, nil,            primitiveEnv)
+#endif
+        && flisp_register_primitive(interp, "throw",         2,  3, nil,            primitiveThrow)
+        && flisp_register_primitive(interp, "i+",            2,  2, type_integer,   integerAdd)
+        && flisp_register_primitive(interp, "i-",            2,  2, type_integer,   integerSubtract)
+        && flisp_register_primitive(interp, "i*",            2,  2, type_integer,   integerMultiply)
+        && flisp_register_primitive(interp, "i/",            2,  2, type_integer,   integerDivide)
+        && flisp_register_primitive(interp, "i%",            2,  2, type_integer,   integerMod)
+        && flisp_register_primitive(interp, "i=",            2,  2, type_integer,   integerEqual)
+        && flisp_register_primitive(interp, "i<",            2,  2, type_integer,   integerLess)
+        && flisp_register_primitive(interp, "i<=",           2,  2, type_integer,   integerLessEqual)
+        && flisp_register_primitive(interp, "i>",            2,  2, type_integer,   integerGreater)
+        && flisp_register_primitive(interp, "i>=",           2,  2, type_integer,   integerGreaterEqual)
+        && flisp_register_primitive(interp, "&",             2,  2, type_integer,   integerAnd)
+        && flisp_register_primitive(interp, "|",             2,  2, type_integer,   integerOr)
+        && flisp_register_primitive(interp, "^",             2,  2, type_integer,   integerXor)
+        && flisp_register_primitive(interp, "<<",            2,  2, type_integer,   integerShiftLeft)
+        && flisp_register_primitive(interp, ">>",            2,  2, type_integer,   integerShiftRight)
+        && flisp_register_primitive(interp, "~",             1,  1, type_integer,   integerNot)
+        && flisp_register_primitive(interp, "string-equal",  2,  2, type_string,    stringEqual)
+        && flisp_register_primitive(interp, "string-length", 1,  1, type_string,    stringLength)
+        && flisp_register_primitive(interp, "string-append", 2,  2, type_string,    stringAppend)
+        && flisp_register_primitive(interp, "substring",     1,  3, nil,            stringSubstring)
+        && flisp_register_primitive(interp, "string-search", 2,  2, type_string,    stringSearch)
+        && flisp_register_primitive(interp, "ascii",         1,  1, type_integer,   asciiToString)
+        && flisp_register_primitive(interp, "ascii->number", 1,  1, type_string,    asciiToInteger)
+        && flisp_register_primitive(interp, "interp",        1, -1, nil,            primitiveInterp);
+}
+                               
 void initRootEnv(Interpreter *interp)
 {
     int i;
@@ -2469,9 +2487,6 @@ void initRootEnv(Interpreter *interp)
     // Add constants
     for (i = 0; i < sizeof(lisp_constants) / sizeof(lisp_constants[0]); i++)
         flisp_register_constant(interp, *lisp_constants[i].symbol, *lisp_constants[i].value);
-    // Add primitives
-    for (i = 0; i < sizeof(primitives) / sizeof(primitives[0]); i++)
-        flisp_register_primitive(interp, &primitives[i]);
 }
 
 Memory *newMemory(size_t size)
@@ -2527,11 +2542,6 @@ Interpreter *flisp_new(
     /* enable debug output */
     interp->debug = debug;
 
-    /* determine library path */
-    if (library_path == NULL)
-        if ((library_path=getenv("FLISPLIB")) == NULL)
-            library_path = CPP_XSTR(FLISPLIB);
-
     Memory *memory = newMemory((size < FLISP_MEMORY_INC_SIZE) ? FLISP_MEMORY_INC_SIZE :size);
     if (memory == NULL) {
         setInterpreterResult(interp, nil, out_of_memory, "failed to allocate memory for the interpreter");
@@ -2558,6 +2568,10 @@ Interpreter *flisp_new(
     /* global environment */
     initRootEnv(interp);
 
+    if (!flisp_primitives_register(interp)) {
+        flisp_destroy(interp);
+        return NULL;
+    }
     /* Add argv0 to the environment */
     *gcVal = newString(interp, *argv);
     Object *var = newSymbol(interp, "argv0");
@@ -2574,6 +2588,10 @@ Interpreter *flisp_new(
 
 
     /* Add library_path to the environment */
+    if (library_path == NULL)
+        if ((library_path=getenv("FLISPLIB")) == NULL)
+            library_path = CPP_XSTR(FLISPLIB);
+
     *gcVal = newString(interp, library_path);
     var = newSymbol(interp, "script_dir");
     envSet(interp, &var, gcVal, &interp->global, true);
@@ -2668,18 +2686,18 @@ Object *cerf(Interpreter *interp, FILE *fd)
     object->car = primitiveRead(interp, &object, &interp->global);
     return evalCatch(interp, &object, &interp->global);
 #else
-    Primitive readPrimitive =  { "read",  0, 2, 0, primitiveRead };
-    Primitive evalPrimitive =  { "eval",  1, 1, 0, primitiveEval };
+    Primitive readPrimitive =  { "read",  0, 2, nil, primitiveRead };
+    Primitive evalPrimitive =  { "eval",  1, 1, nil, primitiveEval };
 
     Object f =         (Object) { type_stream, .path = nil, .fd = fd };
     Object fCons =     (Object) { type_cons, .car = &f, .cdr = nil };
-    Object read =      (Object) { type_primitive, .primitive = &readPrimitive, .type_check = nil };
+    Object read =      (Object) { type_primitive, .primitive = &readPrimitive, .type_check = 0 };
     Object readCons =  (Object) { type_cons, .car = &read, .cdr = &fCons };
     if (fd == NULL)
         readCons.cdr = nil;
     Object readApply =  (Object) { type_cons, .car = &readCons, .cdr = nil };
 
-    Object eval =      (Object) { type_primitive, .primitive = &evalPrimitive, .type_check = nil };
+    Object eval =      (Object) { type_primitive, .primitive = &evalPrimitive, .type_check = 0 };
     Object evalCons =  (Object) { type_cons, .car = &eval, .cdr = &readApply };
     Object *evalApply = &(Object) { type_cons, .car = &evalCons, .cdr = nil };
 

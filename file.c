@@ -480,30 +480,24 @@ Object *fl_getcwd(Interpreter *interp, Object **args, Object **env)
     return newString(interp, buf);
 }
 
-
-Primitive file_primitives[] = {
-    {"fflush",    0, 1, 0,           primitiveFflush},
-    {"fseek",     2, 3, 0,           primitiveFseek},
-    {"ftell",     0, 1, TYPE_STREAM, primitiveFtell},
-    {"feof",      0, 1, TYPE_STREAM, primitiveFeof},
-    {"fgetc",     0, 1, 0,           primitiveFgetc},
-    {"fungetc",   1, 2, 0,           primitiveFungetc},
-    {"fgets",     0, 1, 0,           primitiveFgets},
-    {"fstat",     1, 2, 0,           primitiveFstat},
-    {"fttyp",     0, 1, TYPE_STREAM, primitiveFttyP},
-    {"fmkdir",    1, 2, 0,           primitiveMkdir},
-    {"popen",     1, 2, TYPE_STRING, primitivePopen},
-    {"pclose",    1, 1, TYPE_STREAM, primitivePclose},
-    {"system",    1, 1, TYPE_STRING, fl_system},
-    {"getenv",    1, 1, TYPE_STRING, fl_getenv},
-    {"getcwd",    0, 0, 0,           fl_getcwd},
-};
-
-void flisp_file_register(Interpreter *interp)
+bool flisp_file_register(Interpreter *interp)
 {
-    int i;
-    for (i = 0; i < sizeof(file_primitives) / sizeof(file_primitives[0]); i++)
-             flisp_register_primitive(interp, &file_primitives[i]);
+    return
+        flisp_register_primitive(   interp, "fflush",  0, 1, nil,         primitiveFflush)
+        && flisp_register_primitive(interp, "fseek",   2, 3, nil,         primitiveFseek)
+        && flisp_register_primitive(interp, "ftell",   0, 1, type_stream, primitiveFtell)
+        && flisp_register_primitive(interp, "feof",    0, 1, type_stream, primitiveFeof)
+        && flisp_register_primitive(interp, "fgetc",   0, 1, nil,         primitiveFgetc)
+        && flisp_register_primitive(interp, "fungetc", 1, 2, nil,         primitiveFungetc)
+        && flisp_register_primitive(interp, "fgets",   0, 1, nil,         primitiveFgets)
+        && flisp_register_primitive(interp, "fstat",   1, 2, nil,         primitiveFstat)
+        && flisp_register_primitive(interp, "fttyp",   0, 1, type_stream, primitiveFttyP)
+        && flisp_register_primitive(interp, "fmkdir",  1, 2, nil,         primitiveMkdir)
+        && flisp_register_primitive(interp, "popen",   1, 2, type_string, primitivePopen)
+        && flisp_register_primitive(interp, "pclose",  1, 1, type_stream, primitivePclose)
+        && flisp_register_primitive(interp, "system",  1, 1, type_string, fl_system)
+        && flisp_register_primitive(interp, "getenv",  1, 1, type_string, fl_getenv)
+        && flisp_register_primitive(interp, "getcwd",  0, 0, nil,         fl_getcwd);
 }
 
 /*
