@@ -2,6 +2,7 @@ prefix=$PREFIX
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
+lisplib=\${exec_prefix}/share/flisp
 
 Name: fLisp
 Description: fLisp - a tiny, embeddable Lisp language interpreter
