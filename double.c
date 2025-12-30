@@ -70,27 +70,23 @@ Object *doubleMod(Interpreter *interp, Object **args, Object **env)
     return newDouble(interp, fmod(FLISP_ARG_ONE->number, FLISP_ARG_TWO->number));
 }
 
-Primitive double_primitives[] = {
-    {"integer", 1,  1, TYPE_DOUBLE,  integerFromDouble},
-    {"double",  1,  1, TYPE_INTEGER, doubleFromInteger},
-    {"d+",      2,  2, TYPE_DOUBLE, doubleAdd},
-    {"d-",      2,  2, TYPE_DOUBLE, doubleSubtract},
-    {"d*",      2,  2, TYPE_DOUBLE, doubleMultiply},
-    {"d/",      2,  2, TYPE_DOUBLE, doubleDivide},
-    {"d%",      2,  2, TYPE_DOUBLE, doubleMod},
-    {"d=",      2,  2, TYPE_DOUBLE, doubleEqual},
-    {"d<",      2,  2, TYPE_DOUBLE, doubleLess},
-    {"d<=",     2,  2, TYPE_DOUBLE, doubleLessEqual},
-    {"d>",      2,  2, TYPE_DOUBLE, doubleGreater},
-    {"d>=",     2,  2, TYPE_DOUBLE, doubleGreaterEqual},
-};
-
-void flisp_double_register(Interpreter *interp)
+bool flisp_double_register(Interpreter *interp)
 {
-    int i;
-    for (i = 0; i < sizeof(double_primitives) / sizeof(double_primitives[0]); i++)
-        flisp_register_primitive(interp, &double_primitives[i]);
+    return
+        flisp_register_primitive(   interp, "integer", 1,  1, type_double,  integerFromDouble)
+        && flisp_register_primitive(interp, "double",  1,  1, type_integer, doubleFromInteger)
+        && flisp_register_primitive(interp, "d+",      2,  2, type_double, doubleAdd)
+        && flisp_register_primitive(interp, "d-",      2,  2, type_double, doubleSubtract)
+        && flisp_register_primitive(interp, "d*",      2,  2, type_double, doubleMultiply)
+        && flisp_register_primitive(interp, "d/",      2,  2, type_double, doubleDivide)
+        && flisp_register_primitive(interp, "d%",      2,  2, type_double, doubleMod)
+        && flisp_register_primitive(interp, "d=",      2,  2, type_double, doubleEqual)
+        && flisp_register_primitive(interp, "d<",      2,  2, type_double, doubleLess)
+        && flisp_register_primitive(interp, "d<=",     2,  2, type_double, doubleLessEqual)
+        && flisp_register_primitive(interp, "d>",      2,  2, type_double, doubleGreater)
+        && flisp_register_primitive(interp, "d>=",     2,  2, type_double, doubleGreaterEqual);
 }
+
 
 /*
  * Local Variables:

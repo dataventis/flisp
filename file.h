@@ -3,7 +3,7 @@
 
 #include "lisp.h"
 
-extern void flisp_file_register(Interpreter *);
+extern bool flisp_file_register(Interpreter *);
 
 #endif
 /*
