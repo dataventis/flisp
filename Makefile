@@ -37,7 +37,7 @@ HEADER = lisp.h file.h double.h
 LISPLIB = core.lsp flisp.lsp string.lsp file.lsp
 SOURCES = flisp.c lisp.c lisp.h double.c double.h file.c file.h
 
-DOCFILES = README.md doc/lisp.html doc/develop.html doc/implementation.html
+DOCFILES = README.md doc/flisp.html doc/develop.html doc/implementation.html
 MOREDOCS = README.html doc/flisp.md doc/develop.md doc/implementation.md
 
 .SUFFIXES: .lsp .sht  .md .html
