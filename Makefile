@@ -197,9 +197,9 @@ install-dev: install-lib $(LIBRARIES) $(HEADER) flisp.pc flispd.pc FORCE
 
 uninstall: FORCE
 	-(cd  $(DESTDIR)$(BINDIR) && $(RM) -f $(BINARIES))
-	-(cd  $(DESTDIR)$(INCDIR) && $(RM) -f $(HEADER))
 	-(cd  $(DESTDIR)$(LIBDIR) && $(RM) -f $(LIBRARIES))
 	-(cd  $(DESTDIR)$(LIBDIR)/pkgconfig && $(RM) -f $(PACKAGE).pc)
+	-$(RM) -rf $(DESTDIR)$(INCDIR)/$(PACKAGE)
 	-$(RM) -rf $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(RM) -rf $(DESTDIR)$(DOCDIR)/$(PACKAGE)
 
