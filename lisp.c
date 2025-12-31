@@ -105,27 +105,6 @@ Constant lisp_constants[] = {
     { &is_directory, &is_directory }
 };
 
-/** Type codes:
- *
- * The public type of an object is a Lisp object type.  This cannot be
- * initialized statically so a map to the ObjectType enum is
- * maintained for type checking of arguments.
- */
-
-Object **flisp_object_type[] = {
-    &type_moved,
-    &type_integer,
-    &type_double,
-    &type_string,
-    &type_symbol,
-    &type_cons,
-    &type_lambda,
-    &type_macro,
-    &type_primitive,
-    &type_env,
-    &type_stream
-};
-
 
 bool gc_always = false;
 

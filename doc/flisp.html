@@ -9,7 +9,7 @@
   <meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" />
   <meta content="2023" name="copyright" />
 </head>
-<body>
+<body style="cursor: auto;">
   <h1>fLisp Manual</h1>
   <h3 id="introduction">Introduction</h3>
   <blockquote>
@@ -40,6 +40,9 @@
   </ul>
   <p>Other documentation topics:</p>
   <ul>
+    <li>
+      <a href="development.html">Development</a> of and with <i>fLisp</i> (<a href="development.md">Markdown</a>)
+    </li>
     <li>
       <a href="history.html">History</a> (<a href="history.md">Markdown</a>)
     </li>
@@ -135,7 +138,7 @@
       <a href="develop.html">fLisp Embedding and Development</a>&nbsp;<a href="develop.md">(Markdown)</a>
     </li>
   </ol>
-  <h4 id="notation">Notation Convention</h4>
+  <h3 id="notation">Notation Conventions</h3>
   <p>We use the following notation rule to describe the <i>fLisp</i> syntax:</p>
   <dl>
     <dt><code><var>name</var></code></dt>
@@ -194,14 +197,16 @@
   </nav>
   <h3 id="lisp">Lisp</h3>
   <h4 id="interpreter">fLisp Interpreter</h4>
-  <p>When <i>fLisp</i> is invoked it follows a three step process:</p>
+  <p><i>fLisp</i>&nbsp;processes programs in a three step process:</p>
   <ol>
     <li>Read: program text is read in and converted into an internal representation.</li>
-    <li>Evaluate: the internal representation is evaluated</li>
+    <li>Evaluate: the internal representation is evaluated.</li>
     <li>Print: the result of the evaluation is optionally printed and returned to the invoker.</li>
   </ol>
-  <p>Core functions of the language operate on built-in objects only. <i>fLisp</i> can be extended with additional
-  functions. With respect to the interpreter, extension functions behave the same as core functions.</p>
+  <p><a href="#flisp_primitives">Core functions</a> of the language - called <dfn>primitives</dfn> - operate on
+  built-in <a href="#objects_and_data_types">object types</a>. <i>fLisp</i> can be extended with C-libraries to provide
+  additional functions. With respect to the interpreter processing extension functions behave the same as core
+  functions.</p>
   <h4 id="syntax">Syntax</h4>
   <p>Program text is written as a sequence of symbolic expressions - <abbr><dfn>sexp</dfn></abbr>'s - in parenthesized
   form. A <a href="https://en.wikipedia.org/wiki/S-expression">sexp</a> is either a single symbol or a sequence of
@@ -214,7 +219,7 @@
       "#objects_and_data_types">Objects and Data Types</a>).
     </dd>
     <dt><code>)</code></dt>
-    <dd>Finishes a function invocation, <i>list</i> or <i>cons</i> object.</dd>
+    <dd>Finishes a function or macro invocation, <i>list</i> or <i>cons</i> object.</dd>
     <dt><code>'</code> and <code>:</code></dt>
     <dd>With a single quote or a colon prefix before a <abbr>sexp</abbr>, the <abbr>sexp</abbr> is expanded to
     <code>(quote <var>sexp</var>)</code> before it is evaluated.</dd>
@@ -227,11 +232,22 @@
     <dd>Escape character. When reading a string, the next character is read as character, even if it is special to the
     reader.</dd>
     <dt><code>;</code></dt>
-    <dd>Comment character. When the read encounters a semicolon it ignores it and all characters up to the next
+    <dd>Comment character. When the reader encounters a semicolon it ignores it and all characters up to the next
     newline.</dd>
+    <dt>`</dt>
+    <dd>Quasiquote: a backquote before a sexp is expanded to <code>(quasiquote sexp)</code>, with&nbsp;exception of
+    contained <code>unquote</code> and <code>unquote-splice</code> sequences.</dd>
+    <dt>,</dt>
+    <dd>Expands to <code>(unquote sexp)</code>: an unquoted expresion within a quasiquote is substituted.</dd>
+    <dt>,@</dt>
+    <dd>Expands to <code>(unquote-splice)</code>: like <code>unquote</code>, but if the expresion evaluates to a list
+    its elements are inserted element by element.</dd>
   </dl>
-  <p>Numbers are read and written in decimal notation. Number notation and formatting conventions are the same as in
-  the C&nbsp;language. Exponent notation is not supported by the reader.</p>
+  <p>Note: <code>quasiquote</code>, <code>unquote</code> and <code>unquote-splice</code> are not yet implemented in
+  <i>fLisp</i> 0.14.</p>
+  <p>Numbers are read and written in decimal notation. If the fLisp interpreter with floating point support is used
+  floating point numbers are recognized if a sequence of digit contains a dot (.). Exponent notation is not supported
+  by the reader.</p>
   <p>A list of objects has the form:</p>
   <blockquote>
     <code>([<var>element</var>&nbsp;..])</code>
@@ -252,21 +268,25 @@
   <p><i>fLisp</i> objects have one of the following data types:</p>
   <dl>
     <dt><dfn>integer</dfn></dt>
-    <dd>64 bit singed integer</dd>
+    <dd>64 bit singed integer.</dd>
+    <dt>double</dt>
+    <dd>Double precission IEEE floating point number. Only available in fLisp interpreters with double support.</dd>
     <dt><dfn>string</dfn></dt>
-    <dd>character array.</dd>
+    <dd>Character array.</dd>
     <dt><dfn>cons</dfn></dt>
-    <dd>object holding two pointers to objects.</dd>
+    <dd>Object holding two pointers to objects.</dd>
     <dt><dfn>symbol</dfn></dt>
-    <dd>string with restricted character set: <code>[A-Z][0-9][a-z]!#$%&amp;*+-./:&lt;=&gt;?@^_~</code></dd>
+    <dd>String with restricted character set: <code>[A-Z][0-9][a-z]!#$%&amp;*+-./:&lt;=&gt;?@^_~</code></dd>
+    <dd>In contrast to strings&nbsp;symbols are unique. Two string objects with the same character string can be
+    different objects.&nbsp;&nbsp;</dd>
     <dt><dfn>lambda</dfn></dt>
-    <dd>anonymous function with parameter evaluation</dd>
+    <dd>Anonymous function with parameter evaluation.</dd>
     <dt><dfn>macro</dfn></dt>
-    <dd>anonymous function without parameter evaluation</dd>
+    <dd>Anonymous function without parameter evaluation.</dd>
     <dt><dfn>stream</dfn></dt>
-    <dd>An input/output stream</dd>
+    <dd>An input/output stream.</dd>
   </dl>
-  <p>Objects are immutable, functions either create new objects or return existing ones.</p>
+  <p>Objects are immutable; functions either create new objects or return existing ones.</p>
   <p>Characters do not have their own type. A single character is represented by a <i>string</i> with length one.</p>
   <h4 id="evaluation">Environments, Functions, Evaluation</h4>
   <p>All operations of the interpreter take place in an environment. An <dfn>environment</dfn> is a collection of named
@@ -283,7 +303,7 @@
   the parameters.</p>
   <p>When a sexp is evaluated and encounters a symbol it looks it up in the current environment, and then recursively
   in the environments from which the lambda or macro was invoked. The symbol of the first found binding is then
-  replaced by its object.</p>
+  replaced by its bound object.</p>
   <h4 id="exceptions">Error handling</h4>
   <p>Whenever fLisp encounters an error an exception is thrown. Exceptions have an <dfn>error type</dfn> symbol a human
   readable <dfn>error message</dfn> and the <dfn>object in error</dfn>, which is nil with generic errors. fLisp does
@@ -291,70 +311,93 @@
   "#interp_ops"><code>catch</code></a> statement.</p>
   <p>The following error type symbols are defined and used internally:</p>
   <ul>
-    <li><code>end-of-file</code></li>
-    <li><code>read-incomplete</code></li>
-    <li><code>invalid-read-syntax</code></li>
-    <li><code>range-error</code></li>
-    <li><code>wrong-type-argument</code></li>
-    <li><code>invalid-value</code></li>
-    <li><code>wrong-num-of-arguments</code></li>
-    <li><code>arith-error</code></li>
-    <li><code>io-error</code></li>
-    <li><code>out-of-memory</code></li>
-    <li><code>gc-error</code></li>
+    <li>Read:
+      <ul>
+        <li><code>read-incomplete</code></li>
+        <li><code>invalid-read-syntax</code></li>
+      </ul>
+    </li>
+    <li>Eval:
+      <ul>
+        <li><code>range-error</code></li>
+        <li><code>wrong-type-argument</code></li>
+        <li><code>invalid-value</code></li>
+        <li><code>wrong-num-of-arguments</code></li>
+        <li><code>arith-error</code></li>
+      </ul>
+    </li>
+    <li>
+      <code>System:</code>
+      <ul>
+        <li><code>io-error</code></li>
+        <li><code>out-of-memory</code></li>
+        <li><code>gc-error</code></li>
+        <li><code>end-of-file</code></li>
+        <li><code>permission-denied</code></li>
+        <li><code>not-found</code></li>
+        <li><code>file-exists</code></li>
+        <li><code>is-directory</code></li>
+      </ul>
+    </li>
   </ul>
   <p>Exceptions can be thrown via the <a href="#interp_ops"><code>throw</code></a> function. As long as applicable use
-  one of the existing error codes with <code>throw</code>.</p>
-  <p><i>fLisp</i> outputs an error message formated as <code>error:&nbsp;<var>message</var></code> if the error object
-  is <code>nil</code> otherwise as <code>error:&nbsp;'<var>object</var>',&nbsp;<var>message</var></code>, where
-  <var>object</var> is the serialization of the object causing the error. <var>message</var> is the error message.</p>
+  one of the existing error codes with <code>throw</code>&nbsp;instead of creating new ones.</p>
+  <p><i>fLisp</i> outputs an error message formated like&nbsp;<code>error: <var>symbol</var>:
+  '<var>object</var>'&nbsp;<var>message</var></code> &nbsp;where <var>object</var> is the serialization of the object
+  causing the error. <var>message</var> is the error message.</p>
   <nav>
     <a href="#toc">^</a>
   </nav>
-  <h3 id="primitives"><i>fLisp</i> Primitives</h3>
+  <h3 id="primitives"><i><a id="flisp_primitives" name="flisp_primitives"></a>fLisp</i> Primitives</h3>
   <p><i>fLisp</i> counts with a set of built-in functions called <dfn>primitives</dfn>. They are grouped in the manual
   by the type of objects they operate on. The primitives are bound in the global environment to the names under which
   they are described.</p>
   <h4 id="interp_ops">Interpreter Operations</h4>
   <dl>
-    <dt><code>(progn[&nbsp;<var>expr</var>..])</code></dt>
-    <dd>Each <var>expr</var> is evaluated, the value of the last is returned. If no <var>expr</var> is given,
-    <code>progn</code> returns <code>nil</code>.</dd>
-    <dt><code>(cond[ <var>clause</var>..])</code></dt>
-    <dd>Each <var>clause</var> is of the form <code>(<var>pred</var>[ <var>action</var> ..])</code>. <code>cond</code>
-    evaluates each <var>clause</var> in turn. If <var>pred</var> evaluates to <code>nil</code>, the next
-    <var>clause</var> is tested. If <var>pred</var> evaluates not to <code>nil</code> and if there is no
-    <var>action</var> the value of <var>pred</var> is returned, otherwise <code>(progn <var>action</var> ..)</code> is
-    returned and no more <var>clause</var>s are evaluated.</dd>
+    <dt><code>(progn[&nbsp;<var>expr</var>..])</code> ⇒ <var>val<sub>n</sub></var></dt>
+    <dd>
+      <p>Each <var>expr</var> is evaluated, the value of the last is returned. If no <var>expr</var> is given,
+      <code>progn</code> returns <code>nil</code>.</p>
+    </dd>
+    <dt><code>(cond[ <var>clause</var>..])</code> ⇒
+    <var>pred<sub>n</sub></var>|<var>val<sub>n</sub></var>|<code>nil</code></dt>
+    <dd>
+      <p>Each <var>clause</var> is of the form <code>(<var>pred</var>[ <var>action</var> ..])</code>. <code>cond</code>
+      evaluates each <var>clause</var> in turn. If <var>pred</var> evaluates to <code>nil</code>, the next
+      <var>clause</var> is tested. If <var>pred</var> evaluates not to <code>nil</code> and if there is no
+      <var>action</var> the value of <var>pred</var> is returned, otherwise <code>(progn <var>action</var> ..)</code>
+      is returned and no more <var>clause</var>s are evaluated.</p>
+    </dd>
     <dt><code>(bind <var>symbol</var> <var>value</var>[ <var>globalp</var>)</code> ⇒ <var>value</var></dt>
-    <dd>Create or update <var>symbol</var> and bind it to <var>value</var>. Return value. First <var>symbol</var> is
-    looked up in the current environment, then recursively in the parent environments. If it is not found, it is
-    created in the current environment as long as <var>globalp</var> is <code>nil</code> or omitted. If
-    <var>globalp</var> is not <code>nil</code> <var>symbol</var> is always created in the global (top level)
-    environment.</dd>
-    <dt><code>(define <var>symbol</var> <var>value</var>[ <var>symbol</var> <var>value</var>..])</code>
-    <u>Ss:&nbsp;define, let</u></dt>
-    <dd>Create or update named objects: If <var>symbol</var> is the name of an existing named object in the current or
-    a parent environment the named object is set to <var>value</var>, if no symbol with this name exists, a new one is
-    created in the current environment. <code>define</code> returns the last <var>value</var>.</dd>
-    <dd>Note: <code>define</code> cannot be used to define functions, its features rather resemble
-    <code>let</code>.</dd>
-    <dt><code>(lambda <var>params</var> <var>body</var>)</code></dt>
-    <dd>Returns a <var>lambda</var> function described by <var>body</var>, which accepts zero or more arguments passed
-    as list in the parameter <var>params</var>.</dd>
+    <dd>
+      <p>Create or update <var>symbol</var> and bind it to <var>value</var>. Return value. First <var>symbol</var> is
+      looked up in the current environment, then recursively in the parent environments. If it is not found, it is
+      created in the current environment as long as <var>globalp</var> is <code>nil</code> or omitted. If
+      <var>globalp</var> is not <code>nil</code> <var>symbol</var> is always created in the global (top level)
+      environment.</p>
+    </dd>
+    <dt><code>(lambda <var>params</var> <var>body</var>)</code> ⇒ <var>lambda</var></dt>
+    <dd>
+      <p>Returns a <var>lambda</var> function described by <var>body</var>, which accepts zero or more arguments passed
+      as list in the parameter <var>params</var>.</p>
+    </dd>
     <dt><code>(lambda ([<var>param</var> ..]) <var>body</var>)</code> <u>s</u></dt>
     <dd>Returns a <var>lambda</var> function which accepts the exact number of arguments given in the list of
     <var>param</var>s.</dd>
     <dt><code>(lambda (<var>param</var>[ <var>param</var>..] . <var>opt</var>) <var>body</var>)</code> <u>s</u></dt>
     <dd>Returns a <var>lambda</var> function which requires at least the exact number of arguments given in the list of
     <var>param</var>s. All extra arguments are passed as a list in the parameter <var>opt</var>.</dd>
-    <dt><code>(macro <var>params</var> <var>body</var>)</code></dt>
+    <dt><code>(macro <var>params</var> <var>body</var>)</code> ⇒ <var>macro</var></dt>
     <dt><code>(macro ([<var>param</var> ..]) <var>body</var>)</code> <u>s</u></dt>
     <dt><code>(macro (<var>param</var>[ <var>param</var>..] . <var>opt</var>) <var>body</var>)</code> <u>s</u></dt>
-    <dd>These forms return a macro function. Parameter handling is the same as with lambda.</dd>
-    <dt><code>(quote <var>expr</var>)</code></dt>
-    <dd>Returns <var>expr</var> without evaluating it.</dd>
-    <dt><code>(catch <var>expr</var>)</code> <u>D</u></dt>
+    <dd>
+      <p>These forms return a macro function. Parameter handling is the same as with lambda.</p>
+    </dd>
+    <dt><code>(quote <var>expr</var>)</code> ⇒ <var>expr</var></dt>
+    <dd>
+      <p>Returns <var>expr</var> without evaluating it.</p>
+    </dd>
+    <dt><code>(catch <var>expr</var>)</code> ⇒&nbsp;<var>errinfo</var> <u>D</u></dt>
     <dd>
       <p>Evaluates <var>expr</var> and returns a list with three elements:</p>
       <dl>
@@ -489,7 +532,8 @@
   <nav>
     <a href="#toc">^</a>
   </nav>
-  <h3 id="file">File Extension</h3>
+  <h3><a id="flisp_extensions" name="flisp_extensions"></a>fLisp Extensions</h3>
+  <h4 id="file">File Extension</h4>
   <p><mark>Tbd. carry over comprehensive documentation from <code>file.c</code></mark></p>
   <dl>
     <dt><code>(fflush[&nbsp;<var>stream</var>])</code></dt>
@@ -530,7 +574,7 @@
   <nav>
     <a href="#toc">^</a>
   </nav>
-  <h3 id="double">Double Extension</h3>
+  <h4 id="double">Double Extension</h4>
   <dl>
     <dt><code>(d+ <var>x</var> <var>y</var>)</code></dt>
     <dd>Returns the sum of <var>x</var> <var>y</var>.</dd>
