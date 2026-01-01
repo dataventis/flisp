@@ -2292,7 +2292,7 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
     return new;
 }
 
-// (eq s1 s2)
+// (string-equal s1 s2)
 Object *stringEqual(Interpreter *interp, Object **args, Object **env)
 {
     return !strcmp(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil;
@@ -2604,6 +2604,9 @@ Interpreter *flisp_new(
  * - interp is on the list
  *
  * Note: should we close file descriptors other then debug?
+ *
+ * Note: primitives are registered dynamically, but we do not free
+ *   their memory here!
  */
 void flisp_destroy(Interpreter *interp)
 {
@@ -2670,13 +2673,13 @@ Object *cerf(Interpreter *interp, FILE *fd)
 
     Object f =         (Object) { type_stream, .path = nil, .fd = fd };
     Object fCons =     (Object) { type_cons, .car = &f, .cdr = nil };
-    Object read =      (Object) { type_primitive, .primitive = &readPrimitive, .type_check = 0 };
+    Object read =      (Object) { type_primitive, .primitive = &readPrimitive };
     Object readCons =  (Object) { type_cons, .car = &read, .cdr = &fCons };
     if (fd == NULL)
         readCons.cdr = nil;
     Object readApply =  (Object) { type_cons, .car = &readCons, .cdr = nil };
 
-    Object eval =      (Object) { type_primitive, .primitive = &evalPrimitive, .type_check = 0 };
+    Object eval =      (Object) { type_primitive, .primitive = &evalPrimitive };
     Object evalCons =  (Object) { type_cons, .car = &eval, .cdr = &readApply };
     Object *evalApply = &(Object) { type_cons, .car = &evalCons, .cdr = nil };
 
