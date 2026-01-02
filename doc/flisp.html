@@ -188,6 +188,10 @@
     <dd><var>name</var> is a similar, but not compatible, function in Emacs Lisp, Common Lisp or Scheme.</dd>
     <dt><u>B</u></dt>
     <dd>Buggy/incompatible implementation.</dd>
+    <dt><u>f</u></dt>
+    <dd>fLisp specific function.</dd>
+    <dt><u>d</u></dt>
+    <dd>Only available when the double extension is loaded.</dd>
   </dl>
   <p>Compatibility with Emacs is omitted. By default compatibility with Common Lisp is annotated. The suffix <u>e</u>
   is used to indicate reference to Emacs Lisp, <u>s</u> for Scheme. <var>fLisp</var> specific function are annotated
@@ -347,6 +351,11 @@
   </blockquote>
   <p>where <var>symbol</var> is the error symbol,&nbsp;<var>object</var> is the serialization of the object causing the
   error. <var>message</var> is the error message.</p>
+  <h3>Global Variables</h3>
+  <p>*INPUT*</p>
+  <p>*OUTPUT*</p>
+  <p>argv</p>
+  <p>&nbsp;</p>
   <nav>
     <a href="#toc">^</a>
   </nav>
@@ -400,7 +409,7 @@
     <dd>
       <p>Returns <var>expr</var> without evaluating it.</p>
     </dd>
-    <dt><code>(eval <var>expr</var>)</code></dt>
+    <dt><code>(eval <var>expr</var>)</code> ⇒ <i>o</i></dt>
     <dd>Evaluates <var>expr</var> and returns the result.</dd>
     <dt><code>(catch <var>expr</var>)</code> ⇒&nbsp;<var>errinfo</var> <u>D</u></dt>
     <dd>
@@ -536,9 +545,9 @@
   </dl>
   <h4 id="string_ops">String Operations</h4>
   <dl>
-    <dt><mark><code>(string-equal <var>s1</var> <var>s2</var>)</code></mark> ⇒ <i>p</i>&nbsp;<u>C</u></dt>
-    <dd>Returns <code>nil</code> if strings <var>s1</var> and <var>s2</var> are different, <code>t</code>
-    otherwise.</dd>
+    <dt><code>(string-compare&nbsp;<var>s1</var> <var>s2</var>)</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
+    <dd>Returns <code>0</code> if strings <var>s1</var> and <var>s2</var> are the same, a negative intetger if s1 is
+    less then s2, a positive integer otherwise. See strcmp(3).</dd>
     <dt><code>(string-length <var>string</var>)</code> ⇒ <var>i</var>&nbsp;<u>f</u></dt>
     <dd>Returns the length of <var>string</var> as a <i>number</i>.</dd>
     <dt><code>(string-append <var>s1</var> <var>s2</var>)</code> ⇒ <i>string</i>&nbsp;<u>f</u></dt>
@@ -594,14 +603,8 @@
       </dd>
       <dt><code>(defun <var>name</var> <var>params</var> <var>body</var>)</code> ⇒ <i>lambda</i></dt>
       <dd>Defines and returns a lambda&nbsp;and binds it to the global symbol <var>name</var>.</dd>
-      <dt><code>(setq <var>symbol</var> <var>value</var>[ <var>symbol</var> <var>value</var>..])</code> ⇒
-      <i>value</i></dt>
-      <dd>
-        <p>Create or update named objects: If <var>symbol</var> is the name of an existing named object in the current
-        or a parent environment the named object is set to <var>value</var>, if no symbol with this name exists, a new
-        one is created in the top level environment. <code>setq</code> returns the last <var>value</var>.</p>
-      </dd>
       <dt><code>(cadr '(a <var>b</var>[ <var>c</var>..]))</code> ⇒ <var>b</var></dt>
+      <dd>&nbsp;</dd>
       <dd>Return second element of a list.</dd>
       <dt><code>(cddr '(<var>a</var> <var>b</var>[ <var>c</var>..]))</code> ⇒ <code>([<var>c</var>..])</code></dt>
       <dd>Return rest of list after second element.</dd>
@@ -616,22 +619,45 @@
       <dd>Return first element of first element of first element of list.</dd>
       <dt><code>(cdaar '(((<var>a</var> <var>b))</var>[ <var>c</var>..]))</code> ⇒ <i>b</i></dt>
       <dd>Return rest (cdr) of first element&nbsp;of first element of list.</dd>
-      <dt><code>(curry (<var>func</var> <var>a</var>))</code></dt>
+      <dt><code>(setq <var>symbol</var> <var>value</var>[ <var>symbol</var> <var>value</var>..])</code> ⇒
+      <i>value</i></dt>
+      <dd>
+        <p>Create or update named objects: If <var>symbol</var> is the name of an existing named object in the current
+        or a parent environment the named object is set to <var>value</var>, if no symbol with this name exists, a new
+        one is created in the top level environment. <code>setq</code> returns the last <var>value</var>.</p>
+      </dd>
+      <dt><code>(curry (<var>func</var> <var>a</var>))</code> ⇒ <i>lambda</i></dt>
       <dd>Returns a lambda with one parameter which returns
       <code>(<var>func</var>&nbsp;<var>a</var>&nbsp;<var>b</var>)</code>.</dd>
-      <dt><code>(typep (<var>type</var> <var>object</var>))</code> <u>C</u></dt>
-      <dd>Returns true if <var>object</var> has <var>type</var>.</dd>
-      <dt><code>(integerp <var>object</var>)</code> <u>C</u></dt>
-      <dt><code>(doublep <var>object</var>)</code> <u>C</u></dt>
-      <dt><code>(stringp <var>object</var>)</code> <u>C</u></dt>
-      <dt><code>(symbolp <var>object</var>)</code> <u>C</u></dt>
-      <dt><code>(lamdap <var>object</var>)</code> <u>C</u></dt>
-      <dt><code>(macrop <var>object</var>)</code> <u>C</u></dt>
-      <dt><code>(streamp <var>object</var>)</code> <u>C</u></dt>
+      <dt><code>(typep (<var>type</var> <var>object</var>))</code> ⇒ <i>p</i></dt>
+      <dd>Returns <code>t</code> if <var>object</var> is of type&nbsp;<var>type</var>, <code>nil</code> otherwise.</dd>
+      <dt><code>(integerp <var>object</var>)</code> ⇒ <i>p</i></dt>
+      <dt><code>(doublep <var>object</var>)</code> ⇒ <i>p</i></dt>
+      <dt><code>(stringp <var>object</var>)</code> ⇒ <i>p</i></dt>
+      <dt><code>(symbolp <var>object</var>)</code> ⇒ <i>p</i></dt>
+      <dt><code>(lamdap <var>object</var>)</code> ⇒ <i>p</i></dt>
+      <dt><code>(macrop <var>object</var>)</code> ⇒ <i>p</i></dt>
+      <dt><code>(streamp <var>object</var>)</code> ⇒ <i>p</i></dt>
       <dd>Return <code>t</code> if <var>object</var> is of the respective type, otherwise <code>nil</code>.</dd>
-      <dt><code>(string <var>arg</var>)</code> <u>C</u></dt>
+      <dt><code>(mapcar <var>func</var> <var>list</var>)</code> ⇒ <i>list'</i>&nbsp;<u>Se, Dc</u></dt>
+      <dd>Apply <var>func</var> to each element in list and return the list of results.</dd>
+      <dd>In Elisp func has to be quoted, in CL variadic <var>func</var> operates on a list of lists.</dd>
+      <dt><code>(let ((<var>name</var> <var>value</var>)[&nbsp;(<var>name</var> <var>value</var>)..])
+      <var>body</var>)</code> ⇒ <i>o</i></dt>
+      <dd>Bind all <var>name</var>s to the respective <var>value</var>s then evaluate <var>body</var>.</dd>
+      <dt><code>(let <var>label</var>((<var>name</var> <var>value</var>)[&nbsp;(<var>name</var> <var>value</var>)..])
+      <var>body</var>)</code> ⇒ <i>o</i>&nbsp;<u>Cs</u></dt>
+      <dd>Labelled or <q>named</q> let: define a local function <var>label</var> with <var>body</var> and all
+      <var>name</var>s as parameters bound to the <var>values</var>.</dd>
+      <dt><code>(let* ((<var>name</var> <var>value</var>)[ (<var>name</var> <var>value</var>)..)
+      <var>body</var>)</code> ⇒ <i>o</i></dt>
+      <dd>Sequentually bind all <var>names</var> to the respective <var>values</var> then evaluate
+      <var>body</var>.</dd>
+      <dt><code>(prog1 <var>sexp</var>[<var>sexp</var>..])</code> ⇒ <i>p</i></dt>
+      <dd>Evaluate all <var>sexp</var> in turn and return the value of the first.</dd>
+      <dt><code>(string <var>arg</var>)</code> ⇒ <i>string</i></dt>
       <dd>Returns the string conversion of argument.</dd>
-      <dt><code>(concat</code> [<code><var>arg</var></code>..]<code>)</code> <u>Ce</u></dt>
+      <dt><code>(concat</code> [<code><var>arg</var></code>..]<code>)</code> ⇒ <i>string</i>&nbsp;<u>Ce</u></dt>
       <dd>Returns concatenation of all arguments converted to strings.</dd>
       <dt><code>(assert-type <var>o</var> <var>type</var> <var>s</var>)</code></dt>
       <dt><code>(assert-number <var>o</var> <var>s</var>)</code></dt>
@@ -639,143 +665,144 @@
       <var>s</var> is a signature string indicating the erroneous parameter, e.g. <code>(assert-type o type-string
       "(assert-type o type s) - s")</code> would assert that <var>s</var> is of <code>type-string</code>. In the case
       of <code>assert-number</code> the assertion is done for <code>numberp</code>.</dd>
-      <dt><code>(numberp <var>object</var>)</code> <u>C</u></dt>
+      <dt><code>(numberp <var>object</var>)</code> ⇒ <i>p</i></dt>
       <dd>Return <code>t</code> if <var>object</var> is integer or double, otherwise <code>nil</code>.</dd>
-      <dt><code>(cadr <var>list</var>)</code> <u>C</u></dt>
-      <dt>Return the second element in <var>list</var>, <code>(car (cdr <var>list</var>))</code>.</dt>
-      <dt><code>(cddr <var>list</var>)</code> <u>C</u></dt>
-      <dt>Return all elements after the second one in <var>list</var>, <code>(cdr (cdr <var>list</var>))</code>.</dt>
-      <dt><code>(caddr <var>list</var>)</code> <u>C</u></dt>
-      <dt>Return the third element in list, <code>(car (cdr (cdr <var>list</var>)))</code>.</dt>
-      <dt><code>(append [list ..][&nbsp;a])</code></dt>
-      <dd>Append all elements in all <var>list</var>s into a single list. If atom <var>a</var> is present, make it a
-      dotted list terminating with <var>a</var>.</dd>
-      <dt><code>(fold-left <var>func</var> <var>init</var> <var>list</var>)</code> <u>Ss: fold-left</u></dt>
+      <dt><code>(filter <var>p</var> <var>l</var>)</code> ⇒ <i>list</i></dt>
+      <dd>Return a list of all elements of list <var>l</var> for which the unary predicate function <var>p</var>
+      evaluates not to&nbsp;<code>nil</code>.</dd>
+      <dt><code>(remove&nbsp;<var>p</var> <var>l</var>)</code> ⇒ <i>list</i></dt>
+      <dd>Return a list of all elements of list <var>l</var> for which the unary predicate function <var>p&nbsp;</var>
+      evaluates to&nbsp;<code>nil</code>.</dd>
+      <dt><code>(fold-left <var>func</var> <var>init</var> <var>list</var>)</code> ⇒ <i>o</i>&nbsp;<u>Ss:
+      fold-left</u></dt>
       <dd>Apply the binary <var>func</var>tion to <var>start</var> and the first element of <var>list</var> and then
       recursively to the result of the previous invocation and the first element of the rest of <var>list</var>. If
       <var>list</var> is empty return <var>start</var>.</dd>
-      <dt><code>(flip <var>func</var>)</code> <u>f</u></dt>
+      <dt><code>(flip <var>func</var>)</code> ⇒ <i>lambda</i>&nbsp;<u>f</u></dt>
       <dd>Returns a lambda which calls binary <var>func</var> with it's two arguments reversed (flipped).</dd>
-      <dt><code>(reverse <var>l</var>)</code></dt>
+      <dt><code>(reverse <var>l</var>)</code> ⇒ <i>list</i></dt>
       <dd>Returns a list with all elements of <var>l</var> in reverse order</dd>
-      <dt><code>(apply <var>f</var> [<var>arg</var>&nbsp;..][&nbsp;l])</code></dt>
+      <dt><code>(append [list ..][&nbsp;a])</code> ⇒ <i>list'</i></dt>
+      <dd>Append all elements in all <var>list</var>s into a single list. If atom <var>a</var> is present, make it a
+      dotted list terminating with <var>a</var>.</dd>
+      <dt><code>(apply <var>f</var> [<var>arg</var>&nbsp;..][&nbsp;l])</code> ⇒ <i>o</i></dt>
       <dd>If <var>arg</var> is a single list call lambda <var>f</var> with all its elements as parameters, else call
       <var>f</var> with all <var>arg</var>s as parameters. If list <var>l</var> is present append all its elements to
       the parameter list.</dd>
-      <dt><code>(print <var>o</var>[&nbsp;<var>fd</var>])</code></dt>
+      <dt><code>(print <var>o</var>[&nbsp;<var>fd</var>])</code> ⇒ <i>o</i></dt>
       <dd><code>write</code> object <var>o</var> <code>:readably</code> to stream <var>fd</var> or output.</dd>
-      <dt><code>(princ <var>o</var>[&nbsp;<var>fd</var>])</code></dt>
+      <dt><code>(princ <var>o</var>[&nbsp;<var>fd</var>])</code> ⇒ <i>o</i></dt>
       <dd><code>write</code> object <var>o</var> as is to stream <var>fd</var> or output.</dd>
-      <dt><code>(string-to-number <var>string</var>)</code></dt>
+      <dt><code>(string-to-number <var>string</var>)</code> ⇒ <i>integer</i></dt>
       <dd>Converts <var>string</var> into a corresponding <i>integer</i> object. String is interpreted as decimal based
       integer.</dd>
-      <dd>Converts <var>integer</var> into a <i>string</i> object.</dd>
-      <dt><code>(eq <var>a</var> <var>b</var>)</code></dt>
+      <dt><code>(string-equal <var>s1</var> <var>s2</var>)</code> ⇒ <i>p</i></dt>
+      <dd>Returns <code>t</code> if strings <var>s1</var> and <var>s2</var> are the same, otherweise
+      <code>nil</code>.</dd>
+      <dt><code>(eq <var>a</var> <var>b</var>)</code> ⇒ <i>p</i></dt>
       <dd>Returns <code>t</code> if <var>a</var> and <var>b</var> evaluate to the same object, number or string,
       <code>nil</code> otherwise.</dd>
-      <dt><code>(not <var>object</var>)</code> <u>C</u></dt>
+      <dt><code>(not <var>object</var>)</code> ⇒ <i>p</i></dt>
       <dd>Logical inverse. In Lisp a synonym for <code>null</code></dd>
-      <dt><code>(length <var>obj</var>)</code> <u>C</u></dt>
+      <dt><code>(length <var>obj</var>)</code> ⇒ <i>integer</i></dt>
       <dd>Returns the length of <var>obj</var> if it is a string or a list, otherwise throws a type exception.</dd>
-      <dt><code>(memq <var>arg</var> <var>list</var>)</code></dt>
+      <dt><code>(memq <var>arg</var> <var>list</var>)</code> ⇒ <i>list'</i></dt>
       <dd>If <var>arg</var> is contained in <var>list</var>, returns the sub list of <var>list</var> starting with the
       first occurrence of <var>arg</var>, otherwise returns <code>nil</code>.</dd>
-      <dt><code>(mapcar <var>func</var> <var>list</var>)</code> <u>Se, Dc</u></dt>
-      <dd>Apply <var>func</var> to each element in list and return the list of results.</dd>
-      <dd>In Elisp func has to be quoted, in CL variadic <var>func</var> operates on a list of lists.</dd>
+      <dt><code>(nfold <var>f</var> <var>i</var> <var>l</var>)</code> ⇒ <i>o</i></dt>
       <!--{C}%3C!%2D%2D%20dynmically%20typed%20math%20%2D%2D%3E-->
-      <dt><code>(nfold <var>f</var> <var>i</var> <var>l</var>)</code></dt>
       <dd><q>Number fold</q>: <code>left-fold</code>s binary function <var>f</var> on list <var>l</var> with initial
       value <var>i</var>. Helper function for n-ary generic number type arithmetic.</dd>
-      <dt><code>(coerce ifunc dfunc x y)</code></dt>
+      <dt><code>(fold-leftp <var>predicate</var> <var>start</var> <var>list</var>)</code> ⇒ <i>p</i></dt>
+      <dd><q>Predicate fold</q>: <code>fold-left</code> binary function <var>predicate</var> to <var>list</var> with
+      initial value <var>start</var>. Returns <code>t</code> if <var>list</var> is empty. Helper functions for n-ary
+      generic number type comparison.</dd>
+      <dt><code>(coerce ifunc dfunc x y)</code> ⇒ <i>n</i>&nbsp;<u>fd</u></dt>
       <dd>If <var>x</var> and <var>y</var> are <code>type-integer</code> apply binary integer arithmetic function
       <var>ifunc</var> to them and return the result. If any of them is <code>type-double</code> apply binary double
       arithmethich function <var>dfunc</var> instead. Helper function for n-ary generic number type arithmetic.</dd>
-      <dt><code>(coercec <var>ifunc</var> <var>dfunc</var>)</code></dt>
+      <dt><code>(coercec <var>ifunc</var> <var>dfunc</var>)</code> ⇒ <i>lambda</i><code>&nbsp;<u>fd</u></code></dt>
       <dd><q>Coerce curry</q>: return a lambda <code>coerce</code>ing parameters <var>x</var> and <var>y</var> and
       applying <var>ifunc</var> or <var>dfunc</var> respectively. Helper function for n-ary generic number type
       arithmetic.</dd>
     </dl>
-    <p>The following arithmethic functions coerce their arguments to double if any of them is double, then they use
-    double arithmetic operators. If all arguments are integer they use integer arthmetic.</p>
+    <p>If the double floating point extension is loaded the following arithmethic functions coerce their arguments to
+    double if any of them is double, then they use double arithmetic operators. If all arguments are integer they use
+    integer arthmetic. If the double extension is not loaded, no coercion is applied and integer arithmetic operators
+    are used.</p>
     <dl>
-      <dt><code>(+[ <var>num</var>..])</code></dt>
+      <dt><code>(+[ <var>num</var>..])</code> ⇒ <i>n</i></dt>
       <dd>Returns the sum of all <var>num</var>s or <code>0</code> if none is given.</dd>
-      <dt><code>(*[ <var>num</var>..])</code></dt>
+      <dt><code>(*[ <var>num</var>..])</code> ⇒ <i>n</i></dt>
       <dd>Returns the product of all <var>num</var>s or <code>1</code> if none given.</dd>
-      <dt><code>(-[ <var>num</var>..])</code></dt>
+      <dt><code>(-[ <var>num</var>..])</code> ⇒ <i>n</i></dt>
       <dd>Returns 0 if no <var>num</var> is given, -<var>num</var> if only one is given, <var>num</var> minus the sum
       of all others otherwise.</dd>
-      <dt><code>(/ <var>num</var>[ <var>div</var>..])</code></dt>
+      <dt><code>(/ <var>num</var>[ <var>div</var>..])</code> ⇒ <i>p</i></dt>
       <dd>Returns 1/<var>num</var> if no <var>div</var> is given, <var>num</var>/<var>div</var>[/<var>div</var>..] if
-      one or more <var>div</var>s are given, <code>inf</code> if one of the <var>div</var>s is <code>0</code> and the
-      sum of the signs of all operands is even, <code>-inf</code> if it is odd.</dd>
-      <dt><code>(% <var>num</var>[ <var>div</var>..])</code></dt>
+      one or more <var>div</var>s are given, With double numbers&nbsp;<code>inf</code> if one of the <var>div</var>s is
+      <code>0</code> and the sum of the signs of all operands is even, <code>-inf</code> if it is odd. With only
+      integers division by zero throws an exception.</dd>
+      <dt><code>(% <var>num</var>[ <var>div</var>..])</code> ⇒ <i>n</i></dt>
       <dd>Returns <code>1</code> if no <var>div</var> is given, <var>num</var>%<var>div</var>[%<var>div</var>..] if one
-      or more <var>div</var>s are given. If one of the <var>div</var>s is <code>0</code>, the program exits with an
-      arithmetic exception.</dd>
-      <dt><code>(fold-leftp <var>predicate</var> <var>start</var> <var>list</var>)</code></dt>
-      <dd><q>Predicate fold</q>: <code>fold-left</code> binary function <var>predicate</var> to <var>list</var> with
-      initial value <var>start</var>. Returns <code>t</code> if <var>list</var> is empty. Helper functions for n-ary
-      generic number type comparison.</dd>
-      <dt><code>(= <var>num</var>[ <var>num</var>..])</code></dt>
-      <dt><code>(&lt; <var>num</var>[ <var>num</var>..])</code></dt>
-      <dt><code>(&gt; <var>num</var>[ <var>num</var>..])</code></dt>
-      <dt><code>(&lt;= <var>num</var>[ <var>num</var>..])</code></dt>
-      <dt><code>(&gt;= <var>num</var>[ <var>num</var>..])</code></dt>
+      or more <var>div</var>s are given. If one of the <var>div</var>s is <code>0</code>, the program returns -nan with
+      double numbers. With only intergers an exception is throwsn.</dd>
+      <dt><code>(= <var>num</var>[ <var>num</var>..])</code> ⇒ <i>p</i></dt>
+      <dt><code>(&lt; <var>num</var>[ <var>num</var>..])</code> ⇒ <i>p</i></dt>
+      <dt><code>(&gt; <var>num</var>[ <var>num</var>..])</code> ⇒ <i>p</i></dt>
+      <dt><code>(&lt;= <var>num</var>[ <var>num</var>..])</code> ⇒ <i>p</i></dt>
+      <dt><code>(&gt;= <var>num</var>[ <var>num</var>..])</code> ⇒ <i>p</i></dt>
       <dd>These predicate functions apply the respective comparison operator between all <var>num</var>s and return the
       respective result as <code>t</code> or <code>nil</code>. If only one <var>num</var> is given they all return
       <code>t</code>.</dd>
-      <dt><code>(min <var>n</var>[&nbsp;<var>n</var>..])</code></dt>
-      <dt><code>(max <var>n</var>[&nbsp;<var>n</var>..])</code></dt>
+      <dt><code>(min <var>n</var>[&nbsp;<var>n</var>..])</code> ⇒ <i>n</i></dt>
+      <dt><code>(max <var>n</var>[&nbsp;<var>n</var>..])</code> ⇒ <i>n</i></dt>
       <dd>Return the smallest/biggest number of all given <var>n</var>s.</dd>
       <!--{C}%3C!%2D%2D%20let%20et%20al%20%2D%2D%3E-->
-      <dt><code>(let ((<var>name</var> <var>value</var>)[&nbsp;(<var>name</var> <var>value</var>)..])
-      <var>body</var>)</code> <u>C</u></dt>
-      <dd>Bind all <var>name</var>s to the respective <var>value</var>s then evaluate body.</dd>
-      <dt><code>(let <var>label</var>((<var>name</var> <var>value</var>)[&nbsp;(<var>name</var> <var>value</var>)..])
-      <var>body</var>)</code> <u>Cs</u></dt>
-      <dd>Labelled or <q>named</q> <code>let</code>: define a local function <var>label</var> with <var>body</var> and
-      all <var>name</var>s as parameters bound to the <var>values</var>.</dd>
-      <dt><code>(prog1 <var>sexp</var>[<var>sexp</var>..])</code> <u>C</u></dt>
-      <dd>Evaluate all <var>sexp</var> in turn and return the value of the first.</dd>
-      <dt><code>(and[&nbsp;o..])</code></dt>
-      <dd>Returns <code>t</code> or the last object <var>o</var> if none is given or all evaluate to non
-      <code>nil</code>, <code>nil</code> otherwise.</dd>
-      <dt><code>(join <var>sep</var> <var>l</var>) ⇒ s</code> <u>f</u></dt>
+      <dt><code>(or[&nbsp;o..])</code> ⇒ <i>p</i></dt>
+      <dd>Evaluates each argument in turn, returns the first non-<code>nil</code> argument or <code>nil</code>&nbsp;if
+      there is none.</dd>
+      <dt><code>(and[&nbsp;o..])</code> ⇒ <i>p</i></dt>
+      <dd>Evaluates each argument in turn, returns the first&nbsp;<code>nil</code>&nbsp;argument or the last object
+      <var>o</var> if non evaluates to&nbsp;&nbsp;<code>nil<font face="Times New Roman">.
+      Returns&nbsp;</font></code><code>t</code> if no argument is given.</dd>
+      <dt><code>(join <var>sep</var> <var>l</var>)</code> ⇒ <var>string</var> <u>f</u></dt>
       <dd>Return a string with all elements of <var>l</var> concatenated with <var>sep</var> between each of them.</dd>
       <!--{C}%3C!%2D%2D%20features%20%2D%2D%3E-->
-      <dt><code>(fload</code> <code><var>stream</var>)</code> <u>f</u></dt>
+      <dt><code>(fload</code> <code><var>stream</var>)</code> ⇒ <i>0</i>&nbsp;<u>f</u></dt>
       <dd>Reads and evaluates all Lisp objects in <var>stream</var>.</dd>
-      <dt><code>(load</code> <code><var>path</var>)</code> <u>C</u></dt>
+      <dt><code>(load</code> <code><var>path</var>)</code> ⇒ <i>o</i></dt>
       <dd>Reads and evaluates all Lisp objects in file at <var>path</var>.</dd>
-      <dt><code>(provide <var>feature</var>)</code></dt>
+      <dt><code>(provide <var>feature</var>)</code> ⇒ <i>feature</i></dt>
       <dd>Used as the final expression of a library to register symbol <var>feature</var> as loaded into the
       interpreter.</dd>
-      <dt><code>(require <var>feature</var>)</code></dt>
+      <dt><code>(require <var>feature</var>)</code> ⇒ <i>feature</i></dt>
       <dd>If the <var>feature</var> is not alreaded loaded, the file <code><var>feature</var>.lsp</code> is loaded from
-      the library path and registers the <var>feature</var> if loading was successful. The register is the variable
-      <code><var>features</var></code>.</dd>
+      the library path and registers the <var>feature</var> if loading was successful. The register is the global
+      variable <code><var>features</var></code>.</dd>
     </dl>
   </nav>
   <h3><a id="flisp_extensions" name="flisp_extensions"></a>fLisp Extensions</h3>
+  <p>Extensions implement additional primitives, written in C and must be loaded into an fLisp interpreter after
+  creation. Two extensions are delivered with fLisp: POSIX based stream operations and other interaction with the
+  operationg system and a double floating point extensions.</p>
   <h4 id="file">File Extension</h4>
   <p><mark>Tbd. carry over comprehensive documentation from <code>file.c</code></mark></p>
   <dl>
-    <dt><code>(fflush[&nbsp;<var>stream</var>])</code></dt>
+    <dt><code>(fflush[&nbsp;<var>stream</var>])</code> ⇒ <i>p</i></dt>
     <dd>Flush <var>stream</var>, output or all streams</dd>
     <dt><code>(fseek <var>stream</var> <var>offset</var>[&nbsp;<var>relativep</var>])</code></dt>
     <dd>Seek position <var>offset</var> in <var>stream</var> or input. If <var>offset</var> is negative seek from end,
     if <var>relativep</var> is not null seek from current position, be default seek from start</dd>
-    <dt><code>(ftell[&nbsp;<var>stream</var>])</code></dt>
+    <dt><code>(ftell[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i></dt>
     <dd>Return current position in <var>stream</var> or input.</dd>
-    <dt><code>(feof[&nbsp;<var>stream</var>])</code></dt>
+    <dt><code>(feof[&nbsp;<var>stream</var>])</code> ⇒ <i>symbol</i></dt>
     <dd>Return <code>end-of-file</code> if stream or input are exhausted, else <code>nil</code></dd>
-    <dt><code>(fgetc[&nbsp;<var>stream</var>])</code></dt>
+    <dt><code>(fgetc[&nbsp;<var>stream</var>])</code> ⇒ <i>char</i></dt>
     <dd>Return the next character from <var>stream</var> or input.</dd>
-    <dt><code>(fungetc <var>i</var>[&nbsp;<var>stream</var>])</code></dt>
+    <dt><code>(fungetc <var>i</var>[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i></dt>
     <dd><code>ungetc()</code> integer <var>i</var> as char to <var>stream</var> or input.</dd>
-    <dt><code>(fgets[&nbsp;<var>stream</var>])</code></dt>
+    <dt><code>(fgets[&nbsp;<var>stream</var>])</code> ⇒ <var>string</var><i>|</i><code>end-of-file</code></dt>
     <dd>Read a line or up to <code>INPUT_FMT_BUFSIZ</code> from <var>stream</var> or input.</dd>
     <dt><code>(fstat <var>path</var>[&nbsp;<var>linkp</var>])</code></dt>
     <dd>Get information about file at <var>path</var>.</dd>
