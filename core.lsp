@@ -189,7 +189,9 @@
     (if (car result)  0
 	(if (numberp (caddr result))  (caddr result)
 	    0 ))))
-	  
+
+(defun string-equal (s1 s2)  (i= 0 (string-compare s1 s2)))
+
 (defun eq (o1 o2)
   (cond
     ((same o1 o2))

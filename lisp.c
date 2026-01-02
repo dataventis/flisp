@@ -2292,10 +2292,10 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
     return new;
 }
 
-// (string-equal s1 s2)
-Object *stringEqual(Interpreter *interp, Object **args, Object **env)
+// (string-compare s1 s2)
+Object *stringCompare(Interpreter *interp, Object **args, Object **env)
 {
-    return !strcmp(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string) ? t : nil;
+    return newInteger(interp, strcmp(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string));
 }
 
 // (length s)
@@ -2443,7 +2443,7 @@ bool flisp_primitives_register(Interpreter *interp)
         && flisp_register_primitive(interp, "<<",            2,  2, type_integer,   integerShiftLeft)
         && flisp_register_primitive(interp, ">>",            2,  2, type_integer,   integerShiftRight)
         && flisp_register_primitive(interp, "~",             1,  1, type_integer,   integerNot)
-        && flisp_register_primitive(interp, "string-equal",  2,  2, type_string,    stringEqual)
+        && flisp_register_primitive(interp, "string-compare",2,  2, type_string,    stringCompare)
         && flisp_register_primitive(interp, "string-length", 1,  1, type_string,    stringLength)
         && flisp_register_primitive(interp, "string-append", 2,  2, type_string,    stringAppend)
         && flisp_register_primitive(interp, "substring",     1,  3, nil,            stringSubstring)

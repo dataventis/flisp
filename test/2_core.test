@@ -4,7 +4,7 @@
 
 export FLISPRC=../init.lsp
 
-tap 178
+tap 180
 
 # list
 IN='(list)' OUT=nil
@@ -289,6 +289,12 @@ flisp_expr 1; ok string-to-number-2 string 3.14 is 3.14
 
 IN='(string-to-number "answer")' OUT='0'
 flisp_expr 1; ok string-to-number-3 not number string is 0
+
+IN='(string-equal "a" "a")' OUT='t'
+flisp_expr; ok string-equal-1 same string is t
+
+IN='(string-equal "a" "b")' OUT='nil'
+flisp_expr; ok string-equal-2 different string is nil
 
 IN="(eq 1 1)" OUT='t'
 flisp_expr 1; ok eq-1_1  eq same num is t

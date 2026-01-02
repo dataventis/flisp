@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 181
+tap 184
 
 [ -x ../flispd ]
 ok flisp-1 flisp exists and is executable;
@@ -421,6 +421,10 @@ IN='(>> 8 3)' OUT='1' flisp_expr; ok right-shift-1 right shift 8 3 is 1
 IN='(~ 7)' OUT='-8' flisp_expr; ok not-1 not 7 is -8
 
 ## Strings
+
+IN='(string-compare "a" "a")' OUT="0" flisp_expr; ok string-compare-1 same strings compare 0
+IN='(string-compare "a" "b")' OUT="-1" flisp_expr; ok string-compare-2 a less then b
+IN='(string-compare "b" "a")' OUT="1" flisp_expr; ok string-compare-1 b greater then a
 
 IN='(string-length "")' OUT="0" flisp_expr; ok string-length-1 length of emtpy string is 0
 IN='(string-length "answer")' OUT="6" flisp_expr; ok string-length-2  length of answer string is 6
