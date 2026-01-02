@@ -602,11 +602,20 @@
         one is created in the top level environment. <code>setq</code> returns the last <var>value</var>.</p>
       </dd>
       <dt><code>(cadr '(a <var>b</var>[ <var>c</var>..]))</code> ⇒ <var>b</var></dt>
-      <dd>Return second element of a list</dd>
-      <dt><code>(cddr '(a b[c ..]))</code> ⇒ ([c..])</dt>
+      <dd>Return second element of a list.</dd>
+      <dt><code>(cddr '(<var>a</var> <var>b</var>[ <var>c</var>..]))</code> ⇒ <code>([<var>c</var>..])</code></dt>
       <dd>Return rest of list after second element.</dd>
-    </dl>
-    <dl>
+      <dt><code>(caddr (<var>a</var> <var>b</var> <var>c</var>[ <var>d</var>..]))</code> ⇒
+      <code>([<var>d</var>..])</code></dt>
+      <dd>Return third element of list.</dd>
+      <dt><code>(caar '((<var>a</var> <var>b)</var>[ <var>c</var>..]))</code> ⇒ <i>a</i></dt>
+      <dd>Return first element of first element of list.</dd>
+      <dt><code>(cdar '((<var>a</var> <var>b)</var>[ <var>c</var>..]))</code> ⇒ <i>b</i></dt>
+      <dd>Return rest (cdr) of &nbsp;of first element of list.</dd>
+      <dt><code>(caaar '(((<var>a</var> <var>b))</var>[ <var>c</var>..]))</code> ⇒ <i>a</i></dt>
+      <dd>Return first element of first element of first element of list.</dd>
+      <dt><code>(cdaar '(((<var>a</var> <var>b))</var>[ <var>c</var>..]))</code> ⇒ <i>b</i></dt>
+      <dd>Return rest (cdr) of first element&nbsp;of first element of list.</dd>
       <dt><code>(curry (<var>func</var> <var>a</var>))</code></dt>
       <dd>Returns a lambda with one parameter which returns
       <code>(<var>func</var>&nbsp;<var>a</var>&nbsp;<var>b</var>)</code>.</dd>
