@@ -774,50 +774,57 @@
       <dt><code>(load</code> <code><var>path</var>)</code> ⇒ <i>o</i></dt>
       <dd>Reads and evaluates all Lisp objects in file at <var>path</var>.</dd>
       <dt><code>(provide <var>feature</var>)</code> ⇒ <i>feature</i></dt>
-      <dd>Used as the final expression of a library to register symbol <var>feature</var> as loaded into the
-      interpreter.</dd>
+      <dd>
+        <p>Used as the final expression of a library to register symbol <var>feature</var> as loaded into the
+        interpreter.</p>
+      </dd>
       <dt><code>(require <var>feature</var>)</code> ⇒ <i>feature</i></dt>
-      <dd>If the <var>feature</var> is not alreaded loaded, the file <code><var>feature</var>.lsp</code> is loaded from
-      the library path and registers the <var>feature</var> if loading was successful. The register is the global
-      variable <code><var>features</var></code>.</dd>
+      <dd>
+        <p>If the <var>feature</var> is not alreaded loaded, the file <code><var>feature</var>.lsp</code> is loaded
+        from the library path and registers the <var>feature</var> if loading was successful. The register is the
+        global variable <code><var>features</var></code>.</p>
+      </dd>
     </dl>
   </nav>
   <h3><a id="flisp_extensions" name="flisp_extensions"></a>fLisp Extensions</h3>
-  <p>Extensions implement additional primitives, written in C and must be loaded into an fLisp interpreter after
-  creation. Two extensions are delivered with fLisp: POSIX based stream operations and other interaction with the
-  operationg system and a double floating point extensions.</p>
+  <p>Extensions are C libraries which implement additional primitives. They are loaded into an <i>fLisp</i> interpreter
+  after creation. Two extensions are delivered with <i>fLisp</i>: the <i>file</i> extension for interaction with the
+  operating system and the <i>double</i> floating point extension.</p>
   <h4 id="file">File Extension</h4>
   <p><mark>Tbd. carry over comprehensive documentation from <code>file.c</code></mark></p>
   <dl>
-    <dt><code>(fflush[&nbsp;<var>stream</var>])</code> ⇒ <i>p</i></dt>
+    <dt><code>(fflush[&nbsp;<var>stream</var>])</code> ⇒ <i>p</i>&nbsp;<u>f</u></dt>
     <dd>Flush <var>stream</var>, output or all streams</dd>
-    <dt><code>(fseek <var>stream</var> <var>offset</var>[&nbsp;<var>relativep</var>])</code></dt>
+    <dt><code>(fseek <var>stream</var> <var>offset</var>[&nbsp;<var>relativep</var>])</code> ⇒
+    <i>i</i>&nbsp;<u>f</u></dt>
     <dd>Seek position <var>offset</var> in <var>stream</var> or input. If <var>offset</var> is negative seek from end,
-    if <var>relativep</var> is not null seek from current position, be default seek from start</dd>
-    <dt><code>(ftell[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i></dt>
+    if <var>relativep</var> is not null seek from current position, be default seek from start. Return new
+    position.</dd>
+    <dt><code>(ftell[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
     <dd>Return current position in <var>stream</var> or input.</dd>
-    <dt><code>(feof[&nbsp;<var>stream</var>])</code> ⇒ <i>symbol</i></dt>
+    <dt><code>(feof[&nbsp;<var>stream</var>])</code> ⇒ <i>symbol</i>&nbsp;<u>f</u></dt>
     <dd>Return <code>end-of-file</code> if stream or input are exhausted, else <code>nil</code></dd>
-    <dt><code>(fgetc[&nbsp;<var>stream</var>])</code> ⇒ <i>char</i></dt>
+    <dt><code>(fgetc[&nbsp;<var>stream</var>])</code> ⇒ <i>char</i>&nbsp;<u>f</u></dt>
     <dd>Return the next character from <var>stream</var> or input.</dd>
-    <dt><code>(fungetc <var>i</var>[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i></dt>
+    <dt><code>(fungetc <var>i</var>[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
     <dd><code>ungetc()</code> integer <var>i</var> as char to <var>stream</var> or input.</dd>
-    <dt><code>(fgets[&nbsp;<var>stream</var>])</code> ⇒ <var>string</var><i>|</i><code>end-of-file</code></dt>
+    <dt><code>(fgets[&nbsp;<var>stream</var>])</code> ⇒
+    <var>string</var><i>|</i><code>end-of-file</code>&nbsp;<u>f</u></dt>
     <dd>Read a line or up to <code>INPUT_FMT_BUFSIZ</code> from <var>stream</var> or input.</dd>
-    <dt><code>(fstat <var>path</var>[&nbsp;<var>linkp</var>])</code></dt>
+    <dt><code>(fstat <var>path</var>[&nbsp;<var>linkp</var>])</code> ⇒ <i>proplist</i>&nbsp;<u>f</u></dt>
     <dd>Get information about file at <var>path</var>.</dd>
-    <dt><code>(fttyp[&nbsp;<var>fd</var>])</code></dt>
+    <dt><code>(fttyp[&nbsp;<var>fd</var>])</code> ⇒ <i>p</i>&nbsp;<u>f</u></dt>
     <dd>Return true if input or stream <var>fd</var> is associated with a TTY.</dd>
-    <dt><code>(fmkdir <var>path</var>[&nbsp;<var>mode</var>])</code></dt>
-    <dd>Create directory at <var>path</var> with <var>mode</var>.</dd>
-    <dt><code>(popen <var>line</var>[&nbsp;<var>mode</var>])</code></dt>
-    <dd>Run command line and read from/write to it</dd>
-    <dt><code>(pclose <var>stream</var>)</code></dt>
-    <dd>Close a <var>stream</var> opened with <code>(popen)</code></dd>
-    <dt><code>(system <var>string</var>)</code> ⇒ <var>exit_code</var></dt>
+    <dt><code>(fmkdir <var>path</var>[&nbsp;<var>mode</var>])</code> ⇒ <i>p</i>&nbsp;<u>f</u></dt>
+    <dd>Create directory at <var>path</var> with <var>mode</var>. Return <code>t</code> on success.</dd>
+    <dt><code>(popen <var>line</var>[&nbsp;<var>mode</var>])</code> ⇒ <var>stream</var>&nbsp;<u>f</u></dt>
+    <dd>Run command <var>line</var> and read from/write to it.</dd>
+    <dt><code>(pclose <var>stream</var>)</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
+    <dd>Close a <var>stream</var> opened with <code>(popen)</code>, return the exit status of the command.</dd>
+    <dt><code>(system <var>string</var>)</code> ⇒ <var>i</var>&nbsp;<u>f</u></dt>
     <dd>
-      Execute <var>string</var> as command line of a system shell subpprocess according to the <a href=
-      "https://man7.org/linux/man-pages/man3/system.3.html">system(1)</a> and return the shell <var>exit_code</var> as
+      Execute <var>string</var> as command line of a system shell subpprocess, see&nbsp;<a href=
+      "https://man7.org/linux/man-pages/man3/system.3.html">system(3)</a>&nbsp;, returns the shell exit code as
       integer.
     </dd>
     <dt><code>(getenv <var>name</var>)</code> ⇒ <var>value</var></dt>
@@ -831,22 +838,22 @@
   </nav>
   <h4 id="double">Double Extension</h4>
   <dl>
-    <dt><code>(d+ <var>x</var> <var>y</var>)</code></dt>
+    <dt><code>(d+ <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
     <dd>Returns the sum of <var>x</var> <var>y</var>.</dd>
-    <dt><code>(d* <var>x</var> <var>y</var>)</code></dt>
+    <dt><code>(d* <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
     <dd>Returns the product of <var>x</var> <var>y</var>.</dd>
-    <dt><code>(d- <var>x</var> <var>y</var>)</code></dt>
+    <dt><code>(d- <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
     <dd>Returns <var>x</var> minus <var>y</var>.</dd>
-    <dt><code>(d/ <var>arg</var>[ <var>div</var>..])</code></dt>
+    <dt><code>(d/ <var>arg</var>[ <var>div</var>..])</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
     <dd>Returns <var>x</var> divided by <var>y</var>, or <code>inf</code> if <var>y</var> is zero.</dd>
-    <dt><code>(d% <var>x</var> <var>y</var>)</code></dt>
+    <dt><code>(d% <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
     <dd>Returns the rest (modulo) of the integer division of <var>x</var> by <var>y</var> or <code>-nan</code> if
     <var>y</var> is zero.</dd>
-    <dt><code>(d= <var>x</var> <var>y</var>)</code></dt>
-    <dt><code>(d&lt; <var>x</var> <var>y</var>)</code></dt>
-    <dt><code>(d&gt; <var>x</var> <var>y</var>)</code></dt>
-    <dt><code>(d&lt;= <var>x</var> <var>y</var>)</code></dt>
-    <dt><code>(d&gt;= <var>x</var> <var>y</var>)</code></dt>
+    <dt><code>(d= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d&lt; <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d&gt; <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d&lt;= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d&gt;= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
     <dd>These predicate functions apply the respective comparison operator between <var>x</var> <var>y</var>.</dd>
   </dl>
   <nav>
@@ -854,44 +861,31 @@
   </nav>
   <h3 id="libraries">Lisp Libraries</h3>
   <h4 id="startup">Library Loading</h4>
-  <p>On startup, both <code>femto</code> and <code>flisp</code> try to load a single Lisp file. The default location
-  and name of this <dfn>startup file</dfn> are hardcoded in the binary and can be overwritten with environment
-  variables:</p>
-  <dl>
-    <dt>Startup file</dt>
-    <dd>femto: <code>femto.rc</code>, <code>FEMTORC</code></dd>
-    <dd>flisp: <code>flisp.rc</code>, <code>FLISPRC</code></dd>
-    <dt>Library path</dt>
-    <dd>femto: <code>/usr/local/share/femto</code>, <code>FEMTOLIB</code></dd>
-    <dd>flisp: <code>/usr/local/share/flisp</code>, <code>FLISPLIB</code></dd>
-  </dl>
-  <p>The library path is exposed to the Lisp interpreter as the variable <code>script_dir</code>.</p>
-  <p>The provided startup files implement a minimal library loader, which allows to load Lisp files from the library
-  path conveniently and without repetition. The command to load the file <code>example.lsp</code> from the library is
-  <code>(require 'example)</code>.</p>
+  <p>On startup&nbsp;<i>fLisp</i>&nbsp;reads a single Lisp file. The default path of this <dfn>startup file</dfn> is
+  hardcoded in the binary and can be overwritten at runtime with the environment variable <code>FLISPRC</code>. The
+  default path is&nbsp;<code>/usr/local/share/flisp/init.lsp</code>. but can be modified at compile time.</p>
+  <p>A predefined Lisp library path is also hardcoded in the binary, by default it
+  is&nbsp;<code>/usr/local/share/flisp</code>. It can be overwritten at runtime with the environment
+  variable&nbsp;<code>FLISPLIB</code>. The library path is exposed to the Lisp interpreter as the variable
+  <code>script_dir</code>.</p>
+  <p>Upon installation a startup file is provided, which includes the <code>core.lsp</code> library. This allows to
+  load Lisp files from the library with the&nbsp;&nbsp;<code>require</code>&nbsp;function.</p>
   <p><i>fLisp</i> provides the following set of libraries:</p>
   <dl>
     <dt>core</dt>
-    <dd>Integrated in the <code>.rc</code> files, always loaded. The core library implements the minimum required Lisp
+    <dd>Integrated in the startup&nbsp;file, always loaded. The core library implements the minimum required Lisp
     features for loading libraries.</dd>
     <dt>flisp</dt>
-    <dd>Implements expected standard Lisp functions and additions expected by <code>femto</code> and
-    <code>flisp</code>.</dd>
+    <dd>Implements some additional standard Lisp functions.</dd>
     <dt>string</dt>
     <dd>String manipulation library.</dd>
+    <dt>file</dt>
+    <dd>File, filename and directory operations.</dd>
   </dl>
-  <p>The <i>Femto</i> specific libraries are described together with the <a href="editor.html">editor</a>&nbsp;<a href=
-  "editor.md">(Markdown)</a> extension.</p>
-  <h4 id="core_lib">&nbsp;</h4>
-  <h4 id="flisp_lib">fLisp Library</h4>
-  <p>This library implements commonly excpected Lisp idioms. <i>fLisp</i> implements a carefully selected minimum set
-  of commonly used functions.</p>
+  <h4 id="flisp_lib">flisp Library</h4>
   <dl>
     <dt><code>(listp <var>o</var>)</code> <u>D</u></dt>
     <dd>Returns true if <var>o</var> is <code>nil</code> or a <i>cons</i>.</dd>
-    <dt><code>(or[&nbsp;o..])</code></dt>
-    <dd>Returns <code>nil</code> if all objects o are <code>nil</code>, otherwise returns the first object which
-    evaluates to non <code>nil</code>.</dd>
     <dt><code>(nthcdr <var>i</var> <var>l</var>)</code></dt>
     <dd>Return sub list of <var>l</var> starting from zero-based <var>i</var>th element to the last.</dd>
     <dt><code>(nth <var>i</var> <var>l</var>)</code></dt>
@@ -905,13 +899,12 @@
     <dt><code>(iota <var>count</var>[&nbsp;<var>start</var>[&nbsp;<var>step</var>]])</code> <u>Cs</u></dt>
     <dd>Create a list of <var>count</var> numbers starting with <var>start</var> or <code>0</code> if not given by
     successively adding <var>step</var> or <code>1</code> if not given.</dd>
+    <dt><code>(prop-get <var>l</var> <var>k</var>)</code></dt>
+    <dd><font face="monospace">Return value of key <var>k</var> from property list <var>l</var>.</font></dd>
     <dt><code>(atom <var>o</var>)</code></dt>
     <dd><code>t</code> if <var>o</var> is not a <i>cons</i>.</dd>
     <dt><code>(zerop <var>x</var>)</code></dt>
     <dd><code>t</code> if number <var>x</var> is zero.</dd>
-    <dt><code>(if <var>p</var> <var>then</var>[&nbsp;<var>else</var>)</code></dt>
-    <dd>Evaluate <var>then</var> if predicate <var>p</var> evaluates to not <code>nil</code>, else evaluate
-    <var>else</var>.</dd>
     <dt><code>(equal <var>o1</var> <var>o2</var>)</code></dt>
     <dd>Return <code>nil</code> if <var>o1</var> and <var>o2</var> are not isomorphic.</dd>
   </dl>

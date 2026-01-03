@@ -44,6 +44,8 @@ Object *primitiveFflush(Interpreter *interp, Object** args, Object **env)
  * @param offset     offset from start if positive, from end if
  *                   negative.
  * @param relativep  if given and not nil seek from current position.
+ *
+ * @return new position in the stream.
  */
 Object *primitiveFseek(Interpreter *interp, Object** args, Object **env)
 {
