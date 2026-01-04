@@ -69,6 +69,7 @@
 ;;;
 ;;; Test if string is empty string
 ;;;
+;;; Note: (i= 0 (string-length s)): might be faster
 (defun string-empty-p (s)
   (string-equal "" s))
 

@@ -2452,7 +2452,7 @@ bool flisp_primitives_register(Interpreter *interp)
         && flisp_register_primitive(interp, "ascii->number", 1,  1, type_string,    asciiToInteger)
         && flisp_register_primitive(interp, "interp",        1, -1, nil,            primitiveInterp);
 }
-                               
+
 void initRootEnv(Interpreter *interp)
 {
     int i;
@@ -2512,12 +2512,6 @@ Interpreter *flisp_new(
     interp = malloc(sizeof(Interpreter));
     if (interp == NULL) return NULL;
 
-    if (flisp_interpreters == NULL)
-        interp->next = interp;
-    else
-        interp->next = flisp_interpreters;
-    flisp_interpreters = interp;
-
     /* enable debug output */
     interp->debug = debug;
 
@@ -2527,6 +2521,12 @@ Interpreter *flisp_new(
         return NULL;
     }
     interp->memory = memory;
+
+    if (flisp_interpreters == NULL)
+        interp->next = interp;
+    else
+        interp->next = flisp_interpreters;
+    flisp_interpreters = interp;
 
     /* read buffer */
     interp->buf = NULL;

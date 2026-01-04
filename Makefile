@@ -92,19 +92,19 @@ libflispd.a: lisp.o file.o double.o
 doc: $(MOREDOCS)
 
 doc/flisp.md: doc/flisp.html h2m.lua
-	tidy -m -i2 -w 120 $<
+	tidy -m -config tidyrc $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 doc/develop.md: doc/develop.html h2m.lua
-	tidy -m -i2 -w 120 $<
+	tidy -m -config tidyrc $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 doc/history.md: doc/history.html h2m.lua
-	tidy -m -i2 -w 120 $<
+	tidy -m -config tidyrc $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 doc/implementation.md: doc/implementation.html h2m.lua
-	tidy -m -i2 -w 120 $<
+	tidy -m -config tidyrc $<
 	pandoc -o $@ -t gfm -L h2m.lua $<
 
 README.html: README.md

@@ -18,9 +18,9 @@
     <p>— Antoine de Saint-Exupery</p>
   </blockquote>
   <p><i>fLisp</i> is a tiny yet practical interpreter for a dialect of the Lisp programming language. It can be
-  embedded into other applications and is extensible via C libraries. <i>fLisp</i> is&nbsp;hosted at&nbsp;<a href=
-  "https://github.com/jorge-leon/flisp">Github</a>&nbsp;, released to the public domain and used as extension language
-  for the <a href="https://github.com/jorge-leon/femto"><i>Femto</i> text editor</a>.</p>
+  embedded into other applications and is extensible via C libraries. <i>fLisp</i> is hosted at <a href=
+  "https://github.com/jorge-leon/flisp">Github</a>, released to the public domain and used as extension language for
+  the <a href="https://github.com/jorge-leon/femto"><i>Femto</i> text editor</a>.</p>
   <p><i>fLisp</i> is a Lisp-1 interpreter with Scheme like lexical scoping, tailcall optimization and other Scheme
   influences. <i>fLisp</i> originates from <a href="https://github.com/matp/tiny-lisp">Tiny-Lisp by matp</a> (pre
   2014), was integrated into <a href="https://github.com/hughbarney/femto">Femto</a> by Hugh Barney (pre 2016) and
@@ -78,10 +78,13 @@
         <li>
           <a href="#exceptions">Error Handling</a>
         </li>
+        <li>
+          <a href="#globals">Global Variables</a>
+        </li>
       </ol>
     </li>
     <li>
-      <a href="#primitives">Primitives</a>
+      <a href="#primitives"><i>fLisp</i> Primitives</a>
       <ol>
         <li>
           <a href="#interp_ops">Interpreter Operations</a>
@@ -101,13 +104,13 @@
         <li>
           <a href="#string_ops">String Operations</a>
         </li>
+        <li>
+          <a href="#core_lib"><i>fLisp</i> Core Library</a>
+        </li>
       </ol>
     </li>
     <li>
-      <a href="#core_lib"><i>fLisp</i> Core Library</a>
-    </li>
-    <li>
-      <a href="#extend">Extensions</a>
+      <a href="#extend"><i>fLisp</i> Extensions</a>
       <ol>
         <li>
           <a href="#file">File Extension</a>
@@ -121,9 +124,6 @@
       <a href="#libraries">Lisp Libraries</a>
       <ol>
         <li>
-          <a href="#startup">Library Loading</a>
-        </li>
-        <li>
           <a href="#flisp_lib">fLisp Library</a>
         </li>
         <li>
@@ -135,11 +135,11 @@
       </ol>
     </li>
     <li>
-      <a href="develop.html">fLisp Embedding and Development</a>&nbsp;<a href="develop.md">(Markdown)</a>
+      <a href="#flisp"><code>flisp</code> Command Line Interpreter</a>
     </li>
   </ol>
   <h3 id="notation">Notation Conventions</h3>
-  <p>We use the following notation rule to describe the <i>fLisp</i> syntax:</p>
+  <p>We use the following notation rules to describe the <i>fLisp</i> syntax:</p>
   <dl>
     <dt><code><var>name</var></code></dt>
     <dd><var>name</var> is the name of a variable. In Markdown documents it is shown with guillemots, like this
@@ -151,7 +151,7 @@
     <dt><q><code>&nbsp;</code></q></dt>
     <dd>A single space is used to denote an arbitrary sequence of whitespace.</dd>
   </dl>
-  <p><i>fLisp</i> does not use <code>[</code>square brackets<code>]</code> and double-dots&nbsp;<code>..</code> as
+  <p><i>fLisp</i> does not use <code>[</code>square brackets<code>]</code> and double-dots <code>..</code> as
   syntactical elements.</p>
   <p>Variable names convey the following context:</p>
   <dl>
@@ -201,7 +201,7 @@
   </nav>
   <h3 id="lisp">Lisp</h3>
   <h4 id="interpreter">fLisp Interpreter</h4>
-  <p><i>fLisp</i>&nbsp;processes programs in a three step process:</p>
+  <p><i>fLisp</i> processes programs in a three step process:</p>
   <ol>
     <li>Read: program text is read in and converted into an internal representation.</li>
     <li>Evaluate: the internal representation is evaluated.</li>
@@ -239,7 +239,7 @@
     <dd>Comment character. When the reader encounters a semicolon it ignores it and all characters up to the next
     newline.</dd>
     <dt>`</dt>
-    <dd>Quasiquote: a backquote before a sexp is expanded to <code>(quasiquote sexp)</code>, with&nbsp;exception of
+    <dd>Quasiquote: a backquote before a sexp is expanded to <code>(quasiquote sexp)</code>, with exception of
     contained <code>unquote</code> and <code>unquote-splice</code> sequences.</dd>
     <dt>,</dt>
     <dd>Expands to <code>(unquote sexp)</code>: an unquoted expresion within a quasiquote is substituted.</dd>
@@ -281,8 +281,8 @@
     <dd>Object holding two pointers to objects.</dd>
     <dt><dfn>symbol</dfn></dt>
     <dd>String with restricted character set: <code>[A-Z][0-9][a-z]!#$%&amp;*+-./:&lt;=&gt;?@^_~</code></dd>
-    <dd>In contrast to strings&nbsp;symbols are unique. Two string objects with the same character string can be
-    different objects.&nbsp;&nbsp;</dd>
+    <dd>In contrast to strings symbols are unique. Two string objects with the same character string can be different
+    objects.</dd>
     <dt><dfn>lambda</dfn></dt>
     <dd>Anonymous function with parameter evaluation.</dd>
     <dt><dfn>macro</dfn></dt>
@@ -295,8 +295,10 @@
   <h4 id="evaluation">Environments, Functions, Evaluation</h4>
   <p>All operations of the interpreter take place in an environment. An <dfn>environment</dfn> is a collection of named
   objects. The object names are of type <i>symbol</i>. An object in an environment is said to be <dfn>bound</dfn> to
-  its name. Environments can have a parent. Each <i>fLisp</i> interpreter starts with a <dfn>root</dfn> environment
-  without a parent.</p>
+  its name. An object bound to symbol <var>name</var> is also called to be the&nbsp;<dfn>value</dfn>&nbsp;of
+  the&nbsp;<dfn>variable</dfn>&nbsp;<var>name</var>.</p>
+  <p>Environments can have a parent. Each <i>fLisp</i> interpreter starts with a <dfn>root</dfn> environment without a
+  parent, this is also called the&nbsp;<dfn>global</dfn>&nbsp;environment.</p>
   <p><i>lambda</i> and <i>macro</i> objects are functions. They have a parameter list and a sequence of sexp's as body.
   When functions are invoked a new environment is created as child of the current environment. Functions receive zero
   or more objects from the caller. These are bound one by one to the symbols in the parameter list in the new
@@ -351,15 +353,26 @@
   </blockquote>
   <p>where <var>symbol</var> is the error symbol,&nbsp;<var>object</var> is the serialization of the object causing the
   error. <var>message</var> is the error message.</p>
-  <h3>Global Variables</h3>
-  <p>*INPUT*</p>
-  <p>*OUTPUT*</p>
-  <p>argv</p>
-  <p>&nbsp;</p>
+  <h4 id="globals">Global Variables</h4>
+  <p>When an fLisp interpreter is created the following symbols are bound in the root environment:</p>
+  <dl>
+    <dt><code>*INPUT*</code></dt>
+    <dd>Is bound to the initial input stream or to <code>nil</code> if there is none.</dd>
+    <dt><code>*OUTPUT*</code></dt>
+    <dd>Is bound to the initial output stream, or to <code>nil</code> if there is none.</dd>
+    <dt><code>argv</code></dt>
+    <dd>Is bound to a list of all command line arguments of the invoking program in order. Each element is of type
+    string.</dd>
+    <dt><code>argv0</code></dt>
+    <dd>Is bound to the name of the invoking program. It is of type string.</dd>
+    <dt><code>script_dir</code></dt>
+    <dd>Is bound to either the hard coded path to the Lisp libraries or the contents of the environment variable
+    <code>FLISPLIB</code>.</dd>
+  </dl>
   <nav>
     <a href="#toc">^</a>
   </nav>
-  <h3 id="primitives"><i><a id="flisp_primitives" name="flisp_primitives"></a>fLisp</i> Primitives</h3>
+  <h3 id="primitives"><i>fLisp</i> Primitives</h3>
   <p><i>fLisp</i> counts with a minimal set of built-in functions called <dfn>primitives</dfn>. The complete
   <i>fLisp</i> language is then built on top of this primitives.</p>
   <p>In the following sub section the documentation of primitives is grouped by the type of objects they operate
@@ -482,7 +495,7 @@
   <h4 id="object_ops">Object Operations</h4>
   <dl>
     <dt><code>(null <var>object</var>)</code> ⇒ <var>p</var></dt>
-    <dd>Returns <code>t</code> if <var>object</var> is <code>nil</code>, otherwise <code>nil</code>.</dd>
+    <dd>Returns <code>t</code> if <var>object</var> is <code>nil</code>, otherwise <code>nil</code>.&nbsp;</dd>
     <dt><code>(type-of <var>object</var>)</code> ⇒ <var>symbol</var></dt>
     <dd>Returns the type symbol of <var>object</var>.</dd>
     <dt><code>(consp <var>object</var>)</code> ⇒ <i>p</i></dt>
@@ -758,17 +771,14 @@
       <dt><code>(min <var>n</var>[&nbsp;<var>n</var>..])</code> ⇒ <i>n</i></dt>
       <dt><code>(max <var>n</var>[&nbsp;<var>n</var>..])</code> ⇒ <i>n</i></dt>
       <dd>Return the smallest/biggest number of all given <var>n</var>s.</dd>
-      <!--{C}%3C!%2D%2D%20let%20et%20al%20%2D%2D%3E-->
       <dt><code>(or[&nbsp;o..])</code> ⇒ <i>p</i></dt>
-      <dd>Evaluates each argument in turn, returns the first non-<code>nil</code> argument or <code>nil</code>&nbsp;if
-      there is none.</dd>
+      <dd>Evaluates each argument in turn, returns the first non-<code>nil</code> argument or <code>nil</code> if there
+      is none.</dd>
       <dt><code>(and[&nbsp;o..])</code> ⇒ <i>p</i></dt>
       <dd>Evaluates each argument in turn, returns the first&nbsp;<code>nil</code>&nbsp;argument or the last object
-      <var>o</var> if non evaluates to&nbsp;&nbsp;<code>nil<font face="Times New Roman">.
-      Returns&nbsp;</font></code><code>t</code> if no argument is given.</dd>
+      <var>o</var> if none evaluates to <code>nil. Returns</code> <code>t</code> if no argument is given.</dd>
       <dt><code>(join <var>sep</var> <var>l</var>)</code> ⇒ <var>string</var> <u>f</u></dt>
       <dd>Return a string with all elements of <var>l</var> concatenated with <var>sep</var> between each of them.</dd>
-      <!--{C}%3C!%2D%2D%20features%20%2D%2D%3E-->
       <dt><code>(fload</code> <code><var>stream</var>)</code> ⇒ <i>0</i>&nbsp;<u>f</u></dt>
       <dd>Reads and evaluates all Lisp objects in <var>stream</var>.</dd>
       <dt><code>(load</code> <code><var>path</var>)</code> ⇒ <i>o</i></dt>
@@ -786,42 +796,42 @@
       </dd>
     </dl>
   </nav>
-  <h3><a id="flisp_extensions" name="flisp_extensions"></a>fLisp Extensions</h3>
+  <h3 id="flisp_extensions">fLisp Extensions</h3>
   <p>Extensions are C libraries which implement additional primitives. They are loaded into an <i>fLisp</i> interpreter
   after creation. Two extensions are delivered with <i>fLisp</i>: the <i>file</i> extension for interaction with the
   operating system and the <i>double</i> floating point extension.</p>
   <h4 id="file">File Extension</h4>
+  <p>All functions except <code>getenv</code> are specific to fLisp.</p>
   <p><mark>Tbd. carry over comprehensive documentation from <code>file.c</code></mark></p>
   <dl>
-    <dt><code>(fflush[&nbsp;<var>stream</var>])</code> ⇒ <i>p</i>&nbsp;<u>f</u></dt>
+    <dt><code>(fflush[&nbsp;<var>stream</var>])</code> ⇒ <i>p</i></dt>
     <dd>Flush <var>stream</var>, output or all streams</dd>
     <dt><code>(fseek <var>stream</var> <var>offset</var>[&nbsp;<var>relativep</var>])</code> ⇒
     <i>i</i>&nbsp;<u>f</u></dt>
     <dd>Seek position <var>offset</var> in <var>stream</var> or input. If <var>offset</var> is negative seek from end,
     if <var>relativep</var> is not null seek from current position, be default seek from start. Return new
     position.</dd>
-    <dt><code>(ftell[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
+    <dt><code>(ftell[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i></dt>
     <dd>Return current position in <var>stream</var> or input.</dd>
-    <dt><code>(feof[&nbsp;<var>stream</var>])</code> ⇒ <i>symbol</i>&nbsp;<u>f</u></dt>
+    <dt><code>(feof[&nbsp;<var>stream</var>])</code> ⇒ <i>symbol</i></dt>
     <dd>Return <code>end-of-file</code> if stream or input are exhausted, else <code>nil</code></dd>
-    <dt><code>(fgetc[&nbsp;<var>stream</var>])</code> ⇒ <i>char</i>&nbsp;<u>f</u></dt>
+    <dt><code>(fgetc[&nbsp;<var>stream</var>])</code> ⇒ <i>char</i></dt>
     <dd>Return the next character from <var>stream</var> or input.</dd>
-    <dt><code>(fungetc <var>i</var>[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
+    <dt><code>(fungetc <var>i</var>[&nbsp;<var>stream</var>])</code> ⇒ <i>i</i></dt>
     <dd><code>ungetc()</code> integer <var>i</var> as char to <var>stream</var> or input.</dd>
-    <dt><code>(fgets[&nbsp;<var>stream</var>])</code> ⇒
-    <var>string</var><i>|</i><code>end-of-file</code>&nbsp;<u>f</u></dt>
+    <dt><code>(fgets[&nbsp;<var>stream</var>])</code> ⇒ <var>string</var><i>|</i><code>end-of-file</code></dt>
     <dd>Read a line or up to <code>INPUT_FMT_BUFSIZ</code> from <var>stream</var> or input.</dd>
-    <dt><code>(fstat <var>path</var>[&nbsp;<var>linkp</var>])</code> ⇒ <i>proplist</i>&nbsp;<u>f</u></dt>
+    <dt><code>(fstat <var>path</var>[&nbsp;<var>linkp</var>])</code> ⇒ <i>proplist</i></dt>
     <dd>Get information about file at <var>path</var>.</dd>
-    <dt><code>(fttyp[&nbsp;<var>fd</var>])</code> ⇒ <i>p</i>&nbsp;<u>f</u></dt>
+    <dt><code>(fttyp[&nbsp;<var>fd</var>])</code> ⇒ <i>p</i></dt>
     <dd>Return true if input or stream <var>fd</var> is associated with a TTY.</dd>
-    <dt><code>(fmkdir <var>path</var>[&nbsp;<var>mode</var>])</code> ⇒ <i>p</i>&nbsp;<u>f</u></dt>
+    <dt><code>(fmkdir <var>path</var>[&nbsp;<var>mode</var>])</code> ⇒ <i>p</i></dt>
     <dd>Create directory at <var>path</var> with <var>mode</var>. Return <code>t</code> on success.</dd>
-    <dt><code>(popen <var>line</var>[&nbsp;<var>mode</var>])</code> ⇒ <var>stream</var>&nbsp;<u>f</u></dt>
+    <dt><code>(popen <var>line</var>[&nbsp;<var>mode</var>])</code> ⇒ <var>stream</var></dt>
     <dd>Run command <var>line</var> and read from/write to it.</dd>
-    <dt><code>(pclose <var>stream</var>)</code> ⇒ <i>i</i>&nbsp;<u>f</u></dt>
+    <dt><code>(pclose <var>stream</var>)</code> ⇒ <i>i</i></dt>
     <dd>Close a <var>stream</var> opened with <code>(popen)</code>, return the exit status of the command.</dd>
-    <dt><code>(system <var>string</var>)</code> ⇒ <var>i</var>&nbsp;<u>f</u></dt>
+    <dt><code>(system <var>string</var>)</code> ⇒ <var>i</var></dt>
     <dd>
       Execute <var>string</var> as command line of a system shell subpprocess, see&nbsp;<a href=
       "https://man7.org/linux/man-pages/man3/system.3.html">system(3)</a>&nbsp;, returns the shell exit code as
@@ -830,51 +840,46 @@
     <dt><code>(getenv <var>name</var>)</code> ⇒ <var>value</var></dt>
     <dd>Return the value of the environment variable <var>name</var> as string. If <var>name</var> does not exist
     return <code>nil</code>.</dd>
-    <dt><code>(getcwd)</code> ⇒ <i>string</i>&nbsp;<u>f</u></dt>
+    <dt><code>(getcwd)</code> ⇒ <i>string</i></dt>
     <dd>Return the current working directory.</dd>
   </dl>
   <nav>
     <a href="#toc">^</a>
   </nav>
   <h4 id="double">Double Extension</h4>
+  <p>All functions are specific to fLisp.</p>
   <dl>
-    <dt><code>(d+ <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d+ <var>x</var> <var>y</var>)</code> ⇒ <var>z</var></dt>
     <dd>Returns the sum of <var>x</var> <var>y</var>.</dd>
-    <dt><code>(d* <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d* <var>x</var> <var>y</var>)</code> ⇒ <var>z</var></dt>
     <dd>Returns the product of <var>x</var> <var>y</var>.</dd>
-    <dt><code>(d- <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d- <var>x</var> <var>y</var>)</code> ⇒ <var>z</var></dt>
     <dd>Returns <var>x</var> minus <var>y</var>.</dd>
-    <dt><code>(d/ <var>arg</var>[ <var>div</var>..])</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d/ <var>arg</var>[ <var>div</var>..])</code> ⇒ <var>z</var></dt>
     <dd>Returns <var>x</var> divided by <var>y</var>, or <code>inf</code> if <var>y</var> is zero.</dd>
-    <dt><code>(d% <var>x</var> <var>y</var>)</code> ⇒ <var>z</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d% <var>x</var> <var>y</var>)</code> ⇒ <var>z</var></dt>
     <dd>Returns the rest (modulo) of the integer division of <var>x</var> by <var>y</var> or <code>-nan</code> if
     <var>y</var> is zero.</dd>
-    <dt><code>(d= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
-    <dt><code>(d&lt; <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
-    <dt><code>(d&gt; <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
-    <dt><code>(d&lt;= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
-    <dt><code>(d&gt;= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var>&nbsp;<u>f</u></dt>
+    <dt><code>(d= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var></dt>
+    <dt><code>(d&lt; <var>x</var> <var>y</var>)</code> ⇒ <var>p</var></dt>
+    <dt><code>(d&gt; <var>x</var> <var>y</var>)</code> ⇒ <var>p</var></dt>
+    <dt><code>(d&lt;= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var></dt>
+    <dt><code>(d&gt;= <var>x</var> <var>y</var>)</code> ⇒ <var>p</var></dt>
     <dd>These predicate functions apply the respective comparison operator between <var>x</var> <var>y</var>.</dd>
   </dl>
   <nav>
     <a href="#toc">^</a>
   </nav>
   <h3 id="libraries">Lisp Libraries</h3>
-  <h4 id="startup">Library Loading</h4>
-  <p>On startup&nbsp;<i>fLisp</i>&nbsp;reads a single Lisp file. The default path of this <dfn>startup file</dfn> is
-  hardcoded in the binary and can be overwritten at runtime with the environment variable <code>FLISPRC</code>. The
-  default path is&nbsp;<code>/usr/local/share/flisp/init.lsp</code>. but can be modified at compile time.</p>
-  <p>A predefined Lisp library path is also hardcoded in the binary, by default it
+  <p id="startup">A predefined Lisp library path is hardcoded in <i>fLisp</i>, by default it
   is&nbsp;<code>/usr/local/share/flisp</code>. It can be overwritten at runtime with the environment
   variable&nbsp;<code>FLISPLIB</code>. The library path is exposed to the Lisp interpreter as the variable
   <code>script_dir</code>.</p>
-  <p>Upon installation a startup file is provided, which includes the <code>core.lsp</code> library. This allows to
-  load Lisp files from the library with the&nbsp;&nbsp;<code>require</code>&nbsp;function.</p>
   <p><i>fLisp</i> provides the following set of libraries:</p>
   <dl>
     <dt>core</dt>
-    <dd>Integrated in the startup&nbsp;file, always loaded. The core library implements the minimum required Lisp
-    features for loading libraries.</dd>
+    <dd>Integrated in the startup&nbsp;file, always loaded. The core library implements a&nbsp;minimum set of Lisp
+    features including code for loading additional libraries.</dd>
     <dt>flisp</dt>
     <dd>Implements some additional standard Lisp functions.</dd>
     <dt>string</dt>
@@ -884,28 +889,29 @@
   </dl>
   <h4 id="flisp_lib">flisp Library</h4>
   <dl>
-    <dt><code>(listp <var>o</var>)</code> <u>D</u></dt>
+    <dt><code>(listp <var>o</var>)</code> ⇒ <i>p</i>&nbsp;<u>D</u></dt>
     <dd>Returns true if <var>o</var> is <code>nil</code> or a <i>cons</i>.</dd>
-    <dt><code>(nthcdr <var>i</var> <var>l</var>)</code></dt>
+    <dt><code>(nthcdr <var>i</var> <var>l</var>)</code> ⇒ <i>l'</i></dt>
     <dd>Return sub list of <var>l</var> starting from zero-based <var>i</var>th element to the last.</dd>
-    <dt><code>(nth <var>i</var> <var>l</var>)</code></dt>
+    <dt><code>(nth <var>i</var> <var>l</var>)</code> ⇒ <i>o</i></dt>
     <dd>Return zero-based <var>i</var>th element of list <var>l</var></dd>
-    <dt><code>(fold-right <var>f</var> <var>o</var> <var>l</var>)</code> <u>Cs</u></dt>
+    <dt><code>(fold-right <var>f</var> <var>o</var> <var>l</var>)</code> ⇒ <i>o'</i>&nbsp;<u>Cs</u></dt>
     <dd>Apply binary function <var>f</var> to last element of <var>l</var> and <var>o</var>, then recursively to the
     previous element and the result.</dd>
-    <dt><code>(unfold <var>f</var> <var>o</var> <var>p</var>)</code> <u>Cs</u></dt>
+    <dt><code>(unfold <var>f</var> <var>o</var> <var>p</var>)</code> ⇒ <i>l</i>&nbsp;<u>Cs</u></dt>
     <dd>Create a list starting with <var>o</var> followed by the result of successive application of <var>f</var> to
     <var>o</var> until applying <var>p</var> to the result is not <code>nil</code> anymore.</dd>
-    <dt><code>(iota <var>count</var>[&nbsp;<var>start</var>[&nbsp;<var>step</var>]])</code> <u>Cs</u></dt>
+    <dt><code>(iota <var>count</var>[&nbsp;<var>start</var>[&nbsp;<var>step</var>]])</code> ⇒
+    <i>l</i>&nbsp;<u>Cs</u></dt>
     <dd>Create a list of <var>count</var> numbers starting with <var>start</var> or <code>0</code> if not given by
     successively adding <var>step</var> or <code>1</code> if not given.</dd>
-    <dt><code>(prop-get <var>l</var> <var>k</var>)</code></dt>
-    <dd><font face="monospace">Return value of key <var>k</var> from property list <var>l</var>.</font></dd>
-    <dt><code>(atom <var>o</var>)</code></dt>
+    <dt><code>(prop-get <var>l</var> <var>k</var>)</code> ⇒ <i>o</i></dt>
+    <dd>Return value of key <var>k</var> from property list <var>l</var>.</dd>
+    <dt><code>(atom <var>o</var>)</code> ⇒ <i>p</i></dt>
     <dd><code>t</code> if <var>o</var> is not a <i>cons</i>.</dd>
-    <dt><code>(zerop <var>x</var>)</code></dt>
+    <dt><code>(zerop <var>x</var>)</code> ⇒ <i>p</i></dt>
     <dd><code>t</code> if number <var>x</var> is zero.</dd>
-    <dt><code>(equal <var>o1</var> <var>o2</var>)</code></dt>
+    <dt><code>(equal <var>o1</var> <var>o2</var>)</code> ⇒ <i>p</i></dt>
     <dd>Return <code>nil</code> if <var>o1</var> and <var>o2</var> are not isomorphic.</dd>
   </dl>
   <nav>
@@ -913,26 +919,27 @@
   </nav>
   <h4 id="string_lib">String Library</h4>
   <dl>
-    <dt><code>(string-trim-front <var>s</var>) ⇒ s'</code></dt>
+    <dt><code>(string-trim-front <var>s</var>)</code> ⇒ <var>s'</var></dt>
     <dd>Remove all space characters at the start of <var>s</var>.</dd>
-    <dt><code>(string-trim-back <var>s</var>) ⇒ s'</code></dt>
+    <dt><code>(string-trim-back <var>s</var>)</code> ⇒ <var>s'</var></dt>
     <dd>Remove all space characters at the end of <var>s</var>.</dd>
-    <dt><code>(string-trim <var>s</var>) ⇒ s'</code></dt>
+    <dt><code>(string-trim <var>s</var>)</code> ⇒ <var>s'</var></dt>
     <dd>Remove all space characters from start and end of <var>s</var>.</dd>
-    <dt><code>(string-ref <var>s</var> <var>r</var>) ⇒ c</code></dt>
+    <dt><code>(string-ref <var>s</var> <var>r</var>)</code> ⇒ <var>c</var></dt>
     <dd>Return a string with only the character at position <var>r</var> of <var>s</var>.</dd>
-    <dt><code>(string-startswith <var>s</var> <var>search</var>) ⇒ p</code></dt>
-    <dd>Return <code>t</code> if the first characters of <var>s</var> are the same as <var>search</var>.</dd>
-    <dt><code>(string-shrink-right <var>s</var>) ⇒ s'</code></dt>
-    <dd>Return a copy of string <var>s</var> with the last character removed.</dd>
-    <dt><code>(string-shrink-left <var>s</var>) ⇒ s'</code></dt>
+    <dt><code>(string-startswith <var>s</var> <var>search</var>)</code> ⇒ <var>p</var></dt>
+    <dd>Return <code>t</code> if the first characters of <var>s</var> are the same as <var>search</var>,
+    <code>nil</code> otherwise.</dd>
+    <dt><code>(string-shrink-right <var>s</var>)</code> ⇒ <var>s'</var></dt>
     <dd>Return a copy of string <var>s</var> with the first character removed.</dd>
-    <dt><code>(string-first-char <var>s</var>) ⇒ s'</code></dt>
+    <dt><code>(string-shrink-left <var>s</var>)</code> ⇒ <var>s'</var></dt>
+    <dd>Return a copy of string <var>s</var> with the last&nbsp;character removed.</dd>
+    <dt><code>(string-first-char <var>s</var>)</code> ⇒ <var>s'</var></dt>
     <dd>Return a string with the first character of <var>s</var>.</dd>
-    <dt><code>(string-last-char <var>s</var>) ⇒ s'</code></dt>
+    <dt><code>(string-last-char <var>s</var>)</code> ⇒ <var>s'</var></dt>
     <dd>Return a string with the last character of <var>s</var>.</dd>
-    <dt><code>(string-empty-p <var>s</var>) ⇒ p</code></dt>
-    <dd>Returns <code>t</code> if <var>s</var> is the empty string</dd>
+    <dt><code>(string-empty-p <var>s</var>)</code> ⇒ <var>p</var></dt>
+    <dd>Returns <code>t</code> if <var>s</var> is the empty string, <code>nil</code> otherwise.</dd>
     <dt><code>(string-split <var>sep</var> <var>s</var>) ⇒ l</code> <u>f</u></dt>
     <dd>Return a list with all sub strings of string <var>s</var> which are separated by the string <var>sep</var> or
     <var>s</var> if <var>sep</var> is not contained. If <var>sep</var> is the empty string return a list with all
@@ -942,20 +949,32 @@
     <a href="#toc">^</a>
   </nav>
   <h4 id="file_lib">File Library</h4>
-  <nav>
-    <a href="#toc">^</a>
-  </nav>
   <dl>
-    <dt><code>(mkdir <var>s</var>[&nbsp;<var>parent-p</var>]) ⇒ <var>created-p</var></code></dt>
+    <dt><code>(mkdir <var>s</var>[&nbsp;<var>parent-p</var>])</code> ⇒ <var>created-p</var></dt>
     <dd>If <var>parent-p</var> is <code>nil</code> or absent call <code>(fmkdir <var>s</var>)</code>, otherwise create
     all missing parent directories and finally directory <var>s</var>. Return <code>t</code> if directory already
     exists, or if <var>s</var> is one of <code>/</code>, <code>.</code>, <code>..</code> or the empty string. Return
-    <code>nil</code> if directory was created successfully. Throws exceptions <var>s</var> cannot be created.</dd>
+    <code>nil</code> if directory was created successfully. Throws exceptions if&nbsp;&nbsp;<var>s</var> cannot be
+    created.</dd>
     <dt><code>(file-name-directory <var>s</var>)</code> ⇒ s <u>e</u></dt>
     <dd>Return the directory part of path <var>s</var> with a trailing <code>/</code> or <code>nil</code> if
-    <var>s</var> does not</dd>
+    <var>s</var> does not have a directory part.</dd>
     <dt><code>(file-name-nondirectory <var>s</var>)</code> ⇒ s <u>e</u></dt>
-    <dd>Return the last segment of path <var>s</var>.</dd><!--
+    <dd>Return the last segment of path <var>s</var>.</dd>
+    <dt><code>(file-name-extension <var>s</var>)</code> ⇒ <var>s</var> <u>e</u></dt>
+    <dd>Return the extension&nbsp;of path <var>s</var>, or nil if there is none.</dd>
+  </dl>
+  <p><a href="#toc">^</a></p>
+  <h3 id="flisp"><code>flisp</code> Command Line Interpreter</h3>
+  <p>The command line interpreter <code>flisp</code> reads a single Lisp file on startup. The default path of this
+  <dfn>startup file</dfn> is hardcoded in the binary but can be overwritten at runtime with the environment variable
+  <code>FLISPRC</code>. The default path is&nbsp;<code>/usr/local/share/flisp/init.lsp</code>. but can be modified at
+  compile time.</p>
+  <p>The installed startup file includes the <code>core.lsp</code> library. This allows to load Lisp files from the
+  library with the&nbsp;&nbsp;<code>require</code>&nbsp;function.</p>
+  <p><a href="#toc">^</a></p>
+  <dl>
+    <!--
     Emacs:
     Local Variables:
     fill-column: 120
