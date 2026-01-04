@@ -2489,8 +2489,8 @@ Memory *newMemory(size_t size)
 /** Initialize and return an fLisp interpreter.
  *
  * @param size          Initial size of Lisp object space in bytes.
- * @param argv          null terminated array to arguments to be imported.
- * @param library_path  path to Lisp library, aka 'script_dir'.
+ * @param argv          null terminated array to arguments to be imported or NULL.
+ * @param library_path  path to Lisp library, aka 'script_dir' or NULL for default.
  * @param input         open readable file descriptor for default input or NULL
  * @param output        open writable file descriptor for default output or NULL.
  * @param debug         open writable file descriptor for debug output or NULL.
@@ -2508,6 +2508,7 @@ Interpreter *flisp_new(
     FILE *input, FILE *output, FILE* debug)
 {
     Interpreter *interp;
+    Object *var;
 
     interp = malloc(sizeof(Interpreter));
     if (interp == NULL) return NULL;
@@ -2551,20 +2552,21 @@ Interpreter *flisp_new(
         flisp_destroy(interp);
         return NULL;
     }
-    /* Add argv0 to the environment */
-    *gcVal = newString(interp, *argv);
-    Object *var = newSymbol(interp, "argv0");
-    (void)envSet(interp, &var, gcVal, &interp->global, true);
+    if (argv != NULL) {
+        /* Add argv0 to the environment */
+        *gcVal = newString(interp, *argv);
+        var = newSymbol(interp, "argv0");
+        (void)envSet(interp, &var, gcVal, &interp->global, true);
 
-    /* Add argv to the environement */
-    *gcVal = nil;
-    for (Object **j = gcVal; *++argv; j = &(*j)->cdr) {
-        *j = newCons(interp, &nil, &nil);
-        (*j)->car = newString(interp, *argv);
+        /* Add argv to the environement */
+        *gcVal = nil;
+        for (Object **j = gcVal; *++argv; j = &(*j)->cdr) {
+            *j = newCons(interp, &nil, &nil);
+            (*j)->car = newString(interp, *argv);
+        }
+        var = newSymbol(interp, "argv");
+        (void)envSet(interp, &var, gcVal, &interp->global, true);
     }
-    var = newSymbol(interp, "argv");
-    (void)envSet(interp, &var, gcVal, &interp->global, true);
-
 
     /* Add library_path to the environment */
     if (library_path == NULL)
