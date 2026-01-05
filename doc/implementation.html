@@ -8,37 +8,98 @@
   <meta content="Reference and user manual for the fLisp programming language and interpreter" name="description" />
   <meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" />
   <meta content="2023" name="copyright" />
+  <link href="https://svc.webspellchecker.net/spellcheck31/wscbundle/css/wsc.css" rel="stylesheet" type="text/css" />
 </head>
-<body>
-  <h1>fLisp Implementation Details</h1><a href="flisp.html">fLisp Manual</a> <a href="flisp.md">(Markdown)</a>
+<body data-wsc-instance="true">
+  <h1><i>fLisp</i> Implementation Details</h1>
+  <h3 id="introduciton">Introduction</h3>
+  <p>This document discusses some of the design decisions taken in <i>fLisp</i>. Other documentation topics are:</p>
+  <ul>
+    <li>
+      <a href="flisp.html">fLisp Manual</a> <a href="flisp.md">(Markdown)</a>
+    </li>
+    <li>
+      <a href="file:///home/jorge/Projects/Software/flisp/doc/history.html">History</a> (<a href=
+      "file:///home/jorge/Projects/Software/flisp/doc/history.md">Markdown</a>)
+    </li>
+    <li>
+      <a href="file:///home/jorge/Projects/Software/flisp/doc/implementation.html">Implementation</a> Details (<a href=
+      "file:///home/jorge/Projects/Software/flisp/doc/markdown.md">Markdown</a>)
+    </li>
+  </ul>
   <h3 id="toc">Table of Contents</h3>
   <ol>
-    <ol>
-      <li>
-        <a href="#gc">Garbage Collection</a>
-      </li>
-      <li>
-        <a href="#memory">Memory Usage</a>
-      </li>
-      <li>
-        <a href="#future">Future Directions</a>
-      </li>
-    </ol>
+    <li>
+      <a href="#introduction">Introduction</a>
+    </li>
+    <li>Table of Contents</li>
+    <li>
+      <a href="#objects"><i>fLisp</i> Objects</a>
+    </li>
+    <li>
+      <a href="#gc">Garbage Collection</a>
+    </li>
+    <li>
+      <a href="#memory">Memory Allocation</a>
+    </li>
   </ol>
-  <h3 id="implementation">Implementation Details</h3>
-  <h4 id="gc">Garbage Collection</h4>
-  <p><i>fLisp</i> implements Cheney's copying garbage collector, with which memory is divided into two equal halves
-  (semi spaces): from- and to-space. From-space is where new objects are allocated, whereas to-space is used during
-  garbage collection. The from-space part of the memory is also called the <dfn>Lisp object space</dfn>.</p>
+  <h3 id="objects"><i>fLisp</i> Objects</h3>
+  <h4>Object Size</h4>
+  <p><i>fLisp</i> implements Lisp objects with a minimal memory footprint. The object struct contains the <i>type</i>,
+  the <i>size</i>&nbsp;in bytes of the object&nbsp;and a union which is a unique field for all object types. The
+  biggest object type holds three pointers and a <code>size_t</code> field - which typically is also <code>sizeof(void
+  *)</code>, so a normal object needs about 48 bytes.&nbsp;No space is reserved for a documentation string or
+  properties. Therefore the garbage collector only copies over a minimal, and normally fixed, amount of memory.</p>
+  <p>There are two&nbsp;<dfn>string type</dfn>&nbsp;objects: <i>symbols</i> and <i>strings</i>. Since they can have
+  arbitrary length, the <i>size</i> field is introduced. When allocating a string type object fLisp allocates the
+  required size to hold the entire string in the object space. In all cases the <i>size</i> field is set to the total
+  length of the object.</p>
+  <p>The downside of this design is, that it is not feasible to use <i>fLisp</i> for applications with very large
+  strings because of the high memory demand on the semi spaces and the effort to copy them around with each garbage
+  collection cycle. An application which wants to work with large strings would instead implement an external mechanism
+  for string handling, like it is done with the Femto editor.</p>
+  <h4>Constant Objects</h4>
+  <p>Several symbols are predefined in C code&nbsp;and bound to some value in the&nbsp;root environment, examples are
+  <code>t</code> and <code>nil</code> which are bound to themselves. <i>fLisp</i> does neither garbage collect such
+  symbols, nor does it allow to bind them to a different value, thus effectively creating immutable bindings&nbsp;–
+  constants. This technique is used to define type and error symbols which are then easy to compare by pointer
+  comparision.</p>
+  <p><a href="#toc">^</a></p>
+  <h3 id="gc">Garbage Collection</h3>
+  <p><i>fLisp</i> implements a variant of&nbsp;<a href="https://en.wikipedia.org/wiki/Cheney%27s_algorithm">Cheney's
+  copying garbage collector</a>, with which memory is divided into two equal halves (semi spaces): from- and to-space.
+  From-space is where new objects are allocated, whereas to-space is used during garbage collection. The from-space
+  part of the memory is also called the <dfn>Lisp object space</dfn>.</p>
   <p>When garbage collection is performed, objects that are still in use (live) are copied from from-space to to-space.
   To-space then becomes the new from-space and vice versa, thereby discarding all objects that have not been
   copied.</p>
-  <p>Our garbage collector takes as input a list of root objects. Objects that can be reached by recursively traversing
+  <p>The <i>fLisp</i> garbage collector <a href="https://man7.org/linux/man-pages/man2/mmap.2.html">mmap()</a>'s the
+  to-space when garbage collection starts and unmaps the from-space afterwards.&nbsp;If after garbage collection the
+  free space is less then the required memory (plus some reserved space for exception reporting) the memory is
+  increased by a multiple of the amount specified in the C-macro <code>FLISP_MEMORY_INC</code>, defined in
+  <code>lisp.h</code>. The multiple is calculated to hold at least the additional requested space. This allows the
+  object space to grow on demand.</p>
+  <p>The garbage collector takes as input a list of root objects. Objects that can be reached by recursively traversing
   this list are considered live and will be moved to to-space. When we move an object, we must also update its pointer
   within the list to point to the objects new location in memory.</p>
-  <p>However, this implies that our interpreter cannot use raw pointers to objects in any function that might trigger
-  garbage collection (or risk causing a SEGV when accessing an object that has been moved). Instead, objects must be
-  added to the list and then only accessed through the pointer inside the list.</p>
+  <p>The root objects of an fLisp interpreter are found in the following fields of the <code>Interpreter</code>
+  struct:</p>
+  <dl>
+    <dt><code>gcTop</code></dt>
+    <dd>List of active variables along the call stack.</dd>
+    <dt><code>symbols</code></dt>
+    <dd>The list of Lisp symbols.</dd>
+    <dt><code>global</code></dt>
+    <dd>The root environment.</dd>
+    <dt><code>result</code></dt>
+    <dd>The result object of the <code>flisp_eval()</code> call.</dd>
+    <dt><code>input.path</code></dt>
+    <dd>The path string object of the input stream.</dd>
+  </dl>
+  <p>With respect to the active variables in the call stack the interpreter cannot use raw pointers to objects: any
+  function that might trigger garbage collection would move the object pointed to, causing a SEGV when accessing the
+  pointer. Instead, objects must be added to the <code>gcTop</code> list and then only accessed through the pointers
+  inside the list.</p>
   <p>Thus, whenever we would have used a raw pointer to an object, we use a pointer to the pointer inside the list
   instead:</p>
   <pre>
@@ -50,22 +111,23 @@
       v
       semi space:             object in memory
     </pre>
-  <p><code><var>GC_TRACE</var></code> adds an object to the list and declares a variable which points to the objects
-  pointer inside the list.</p>
-  <p><code><var>GC_TRACE</var>(<var>gcX</var>, <var>X</var>)</code>: add object <var>X</var> to the list and declare
-  <code>Object&nbsp;**<var>gcX</var></code> to point to the pointer to <var>X</var> inside the list.</p>
-  <p>Information about the garbage collection process and memory status is written to the debug file descriptor.</p>
-  <h4 id="memory">Memory Allocation</h4>
-  <p>Object allocation adjusts the size of the Lisp object space on demand: If after garbage collection the free space
-  is less then the required memory plus some reserved space for exception reporting, the memory is increased by a
-  multiple of the amount specified in the C-macro <code>FLISP_MEMORY_INC</code>, defined in <code>lisp.h</code>. The
-  multiple is calculated to hold at least the additional requested space.</p>
-  <p><code>lisp_new()</code> allocates <code>FLISP_MIN_MEMORY</code>, defined in <code>lisp.h</code>, and then
-  allocates all initial objects without taking care of garbage collection. Then it prints out the amount of Lisp object
-  space consumed to the debug file descriptor. For <i>fLisp</i> this is currently about 21&nbsp;kB, for <i>femto</i>
-  about 34&nbsp;kB.</p>
-  <p>In order to reduce garbage collection frequency, especially during startup, one can set
-  <code>FLISP_INITIAL_MEMORY</code> to a desired additional amount of memory to allocate on startup.</p>
+  <p><code><var>GC_TRACE(gcX, X)</var></code>&nbsp;add object <var>X</var> to the <code>gcTop</code> list and declares
+  the variable <var>gcX</var> which points to the objects pointer inside the list. The list chains&nbsp;are uniquely
+  named variables based on the line number of the <code>GC_TRACE</code> macro. Therefore each <code>GC_TRACE</code>
+  invocation must occur on a different line.</p>
+  <p>Information about each&nbsp;garbage collection process and memory status is written to the debug file descriptor.
+  By recompiling <i>fLisp</i> with <code>DEBUG_GC</code> set to 1 much more debug information is&nbsp;produced. Setting
+  <code>FLISP_TRACK_GCTOP</code> to 1 will add information about garbage collection of the active variables in the call
+  stack. Finally every now and then the <i>fLisp</i>&nbsp;garbage collector is stress tested by setting
+  <code>DEBUG_GC_ALWAYS</code> to 1. This forces garbage collection on <strong>each</strong> object allocation.</p>
+  <p><a href="#toc">^</a></p>
+  <h3 id="memory">Memory Allocation</h3>
+  <p><code>lisp_new()</code>&nbsp;sets the initial size of the semi-spaces to the given value,&nbsp;&nbsp;but at least
+  to <code>FLISP_MEMORY_INC_SIZE</code> which defaults to eight kilobytes.&nbsp; An application should initialize the
+  semi-space size to a value above its typical object space demand to avoid repeated garbage collection cycles on
+  startup.</p>
+  <p>The <code>flisp</code> command line utility which loads just the file extension and the core Lisp library grows
+  its object space to about 120kB during startup.</p>
   <p>Some other compile time adjustable limits in <code>lisp.h</code>:</p>
   <dl>
     <dt>Input buffer</dt>
@@ -74,18 +136,6 @@
     <dt>Output buffer</dt>
     <dd>2048, <code>WRITE_FMT_BUFSIZ</code>, size of the output and message formatting buffer.</dd>
   </dl>
-  <p><i>fLisp</i> can live with as little as 50k object memory up to startup. The Femto editor requires much more
-  memory because of the needs of the <q>OXO</q> game.</p>
-  <h4 id="future">Future Directions</h4>
-  <p>Loops are availble via the labelled let macro and supported by <code>iota</code>. It could made easier, by any
-  combination of:</p>
-  <ul>
-    <li>loop/while/for macro</li>
-    <li>Demoing hand crafted loops including breaking with throw.</li>
-  </ul>
-  <p>Implement backquote and friends.</p>
-  <p>Pluggable extensions.</p>
-  <p>Take away more things.</p>
   <nav>
     <a href="#toc">^</a>
   </nav><!--

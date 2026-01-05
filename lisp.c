@@ -540,7 +540,7 @@ size_t objectSize(size_t size)
  * @param type    Object type of the new Object
  * @param size    Number of bytes to allocate
  *
- * If the size fit's directly into the "standard object" (abount 24
+ * If the size fit's directly into the "standard object" (about 24
  * bytes) only allocate the object, otherwise allocate the missing bytes.
  *
  * @returns New Object

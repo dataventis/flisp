@@ -24,12 +24,12 @@
 - Size reduction:
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
 - Tap the potential of the in code documentation via Doxygen.
-- Cleanup cerf: not so easy to do.
+- Cleanup cerf: not so easy to do, but now easier with dynamic primitive loading.
 - Hash
   - Add new 'hash' field as uintptr_t to Lisp object struct type union.
   - Initialize each string type object with a hash of 0.
 - Dynamic types
-  - Make 'type' postfix of name instead of prefix. type-string -> string-type.
+  - Make 'type' postfix of name instead of prefix. type-string -> string-type (why?)
   - Add Object * interp->types to interpreter struct and register types there.
   - Use the hash of types for type checking.
 - String size restriction
