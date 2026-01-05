@@ -130,11 +130,13 @@ LISPSRC = init.sht $(LISPLIB)
 ALLSRC = $(SOURCES) $(LISPSRC)
 # Requires sloccount
 measure: $(RC_FILES) $(BINARIES) strip FORCE
-	@echo fLisp
-	@echo "binsize:      " $$(set -- $$(ls -l flisp); echo $$5)
-	@echo "              C/Lisp/Total"
-	@echo "lines:     $$(wc -l $(SOURCES)) / $$(wc -l $(LISPSRC)) / $$(wc -l $(ALLSRC))"
-	@echo "files:     $$(echo $(SOURCES) | wc -w) / $$(echo $(LISPSRC) | wc -w) / $$(echo $(ALLSRC))"
+	@echo
+	@echo fLisp Code Stats
+	@echo
+	@echo "binsize: " $$(set -- $$(ls -l flisp); echo $$5)
+	@echo "              C  Lisp  Total"
+	@echo "lines:     $$(cat $(SOURCES) | wc -l)   $$(cat $(LISPSRC) | wc -l)   $$(cat $(ALLSRC) | wc -l)"
+	@echo "files:        $$(echo $(SOURCES) | wc -w)     $$(echo $(LISPSRC) | wc -w)     $$(echo $(ALLSRC) | wc -w)"
 	@echo "sloccount: " \
 	    $$(set -- $$(which sloccount >/dev/null && \
 	        { sloccount $(ALLSRC) | grep ansic=; }); echo $$3)	

@@ -1,0 +1,64 @@
+<h1 id="flisp">fLisp</h1>
+<p>fLisp is a tiny yet practical interpreter for a dialect of the Lisp
+programming language. It is designed to be embeddable in applications as
+extension language.</p>
+<p>fLisp is embedded into the (Femto)[<a
+href="https://github.com/jorge-leon/femto]">https://github.com/jorge-leon/femto]</a>
+editor.</p>
+<blockquote>
+<p>A designer knows he has achieved perfection not when there is nothing
+left to add, but when there is nothing left to take away. --
+<cite>Antoine de Saint-Exupery</cite></p>
+</blockquote>
+<h2 id="why-the-name-flisp">Why the name fLisp</h2>
+<p>Lower case "f" stands for the femto metric prefix which represents
+10^-15 — a very small number. fLisp is meant to be very small.</p>
+<p>Since "femtolisp" is already taken by a not so "femto" Lisp
+interpreter, the choice fell on "fLisp".</p>
+<h2 id="goals-of-flisp">Goals of fLisp</h2>
+<ul>
+<li>To be the smallest embeddable Lisp interpreter yet powerful enough
+to drive real world applications.</li>
+<li>To be rock stable, predictable and consistent.</li>
+<li>To consume as little resources as possible.</li>
+<li>To be easy to understand without extensive study (to encourage
+further experimentation).</li>
+</ul>
+<p>Size by version:</p>
+<pre><code>Version Binary  C-Lines/sloc/Files  Lisp-Lines/sloc/Files
+0.13    85584   3.6k/2.4k/6         373/272/3
+0.14    82984   3.7k/2.4k/7         610/355/5</code></pre>
+<h2 id="building">Building</h2>
+<p>fLisp only depends on the standard C libraries.</p>
+<p>The default Makefile target:</p>
+<pre><code>make all</code></pre>
+<p>creates:</p>
+<ul>
+<li><p>flisp .. The flisp command line utility.</p></li>
+<li><p>flispd .. The command line utility with floating point (double)
+support.</p></li>
+<li><p>libflisp.a and libflispd.a .. The libraries for embedding fLisp
+in other applications.</p>
+<p>make install</p></li>
+</ul>
+<p>Installs the command line utilities, documentation and Lisp
+libraries.</p>
+<pre><code>make install-dev</code></pre>
+<p>Installs the libraries, header files and pkg-config files.</p>
+<pre><code>make deb</code></pre>
+<p>Builds the Debian packages <code>flisp</code> and
+<code>flisp-dev</code>. The first installs the command line utilities,
+the Lisp libraries and the documentation, the second only the files
+required for development.</p>
+<h1 id="documentation">Documentation</h1>
+<p>Extensive documentation is available in the <code>doc</code>
+directory in POSHdoc/HTML and Markdown format.</p>
+<ul>
+<li>(Manual)[doc/flisp.html] ((Markdown)[doc/flisp.md]).</li>
+<li>(Development)[doc/develop.html] of and with fLisp
+((Markdown)[doc/develop.md]).</li>
+<li>(Implementation)[doc/implementation.html] Details
+((Markdown)[doc/implementation.md]).</li>
+<li>(History)[doc/history.html] Details
+((Markdown)[doc/history.md]).</li>
+</ul>
