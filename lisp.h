@@ -62,7 +62,7 @@ struct Object {
         struct { char string[sizeof (Object *[3])]; };             // string, symbol
         struct { Object *car, *cdr; };                             // cons
         struct { Object *params, *body, *env; };                   // lambda, macro
-        struct { Primitive *primitive; Object *type_check; };      // primitive
+        struct { Primitive *primitive; };                          // primitive
         struct { Object *parent, *vars, *vals; };                  // env
         struct { Object *path; FILE *fd; char *buf; size_t len; }; // file descriptor/stream
         struct { Object *forward; };                               // forwarding pointer
@@ -211,7 +211,7 @@ extern void flisp_write_object(Interpreter *, FILE *, Object *, bool);
 extern void flisp_write_error(Interpreter *, FILE *);
 
 extern void flisp_register_constant(Interpreter *, Object *, Object *);
-extern bool flisp_register_primitive(Interpreter *, char *, int, int, Object *, LispEval);
+extern Primitive *flisp_register_primitive(Interpreter *, char *, int, int, Object *, LispEval);
 
 #define FLISP_RESULT_CODE(INTERPRETER) INTERPRETER->error
 #define FLISP_RESULT_MESSAGE(INTERPRETER) ((Object *)&INTERPRETER->message)

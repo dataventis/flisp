@@ -2370,16 +2370,16 @@ void flisp_register_constant(Interpreter *interp, Object *symbol, Object *value)
     interp->symbols = newCons(interp, &symbol, &interp->symbols);
 }
 
-bool flisp_register_primitive(Interpreter *interp, char *name,
-                              int min_args, int max_args, Object *args_type,
-                              LispEval func)
+Primitive *flisp_register_primitive(Interpreter *interp, char *name,
+                                    int min_args, int max_args, Object *args_type,
+                                    LispEval func)
 {
     Primitive *primitive = malloc(sizeof(Primitive));
     if (primitive == NULL)
-        return false;
+        return NULL;
     primitive->name = strdup(name);
     if (primitive->name == NULL)
-        return false;
+        return NULL;
     primitive->nMinArgs = min_args;
     primitive->nMaxArgs = max_args;
     primitive->argsType = args_type;
@@ -2390,35 +2390,52 @@ bool flisp_register_primitive(Interpreter *interp, char *name,
     Object *p = newPrimitive(interp, primitive);
     GC_RELEASE;
     envSet(interp, gcSymbol, &p, &interp->global, true);
-    return true;
+    return primitive;
 }
 
+Primitive *readPrimitive = NULL;
+Primitive *evalPrimitive = NULL;
+//Object *readCons = NULL;
+//Object *evalApply = NULL;
 bool flisp_primitives_register(Interpreter *interp)
 {
+    if (readPrimitive != NULL)         /* Already loaded */
+        return true;
+    if (!
+        (flisp_register_primitive(   interp, "quote",         1,  1, nil, (LispEval) PRIMITIVE_QUOTE)
+         && flisp_register_primitive(interp, "bind",          2,  3, nil, (LispEval) PRIMITIVE_BIND  /* special form */ )
+         && flisp_register_primitive(interp, "progn",         0, -1, nil, (LispEval) PRIMITIVE_PROGN /* special form */ )
+         && flisp_register_primitive(interp, "cond",          0, -1, nil, (LispEval) PRIMITIVE_COND  /* special form */ )
+         && flisp_register_primitive(interp, "lambda",        1, -1, nil, (LispEval) PRIMITIVE_LAMBDA /* special form */ )
+         && flisp_register_primitive(interp, "macro",         1, -1, nil, (LispEval) PRIMITIVE_MACRO  /* special form */ )
+         && flisp_register_primitive(interp, "macroexpand-1", 1,  2, nil, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ )
+         && flisp_register_primitive(interp, "catch",         1,  1, nil, (LispEval) PRIMITIVE_CATCH  /*special form */ )
+         && flisp_register_primitive(interp, "null",          1,  1, nil,            primitiveNullP)
+         && flisp_register_primitive(interp, "type-of",       1,  1, nil,            primitiveTypeOf)
+         && flisp_register_primitive(interp, "consp",         1,  1, nil,            primitiveConsP)
+         && flisp_register_primitive(interp, "intern",        1,  1, type_string,    primitiveIntern)
+         && flisp_register_primitive(interp, "symbol-name",   1,  1, type_symbol,    primitiveSymbolName)
+         && flisp_register_primitive(interp, "same",          2,  2, nil,            primitiveSame)
+         && flisp_register_primitive(interp, "car",           1,  1, nil,            primitiveCar) /* Note: nil|cons */
+         && flisp_register_primitive(interp, "cdr",           1,  1, nil,            primitiveCdr) /* Note: nil|cons */
+         && flisp_register_primitive(interp, "cons",          2,  2, nil,            primitiveCons)
+         && flisp_register_primitive(interp, "open",          1,  2, type_string,    primitiveFopen)
+         && flisp_register_primitive(interp, "close",         1,  1, type_stream,    primitiveFclose)
+         && flisp_register_primitive(interp, "file-info",     1,  1, type_stream,    primitiveFinfo))
+        )
+        return false;
+    /* Note: make the following two local then .. */
+    readPrimitive = flisp_register_primitive(interp, "read", 0,  2, nil,            primitiveRead);
+    evalPrimitive = flisp_register_primitive(interp, "eval", 1,  1, nil,            primitiveEval);
+    /* .. call here evalApply = createEvalApply(readPrimitive, evalPrimitive); and
+     * readCons = createReadCons();
+     * createReadCons() and createEvalApply() would allocate Objects with malloc.
+     * cerf() would then just fix readCons with the fd and return evalCatch(interp, evalApply, &interp->global);
+     */
+    if (readPrimitive == NULL || evalPrimitive == NULL)
+        return false;
     return
-        flisp_register_primitive(   interp, "quote",         1,  1, nil, (LispEval) PRIMITIVE_QUOTE)
-        && flisp_register_primitive(interp, "bind",          2,  3, nil, (LispEval) PRIMITIVE_BIND  /* special form */ )
-        && flisp_register_primitive(interp, "progn",         0, -1, nil, (LispEval) PRIMITIVE_PROGN /* special form */ )
-        && flisp_register_primitive(interp, "cond",          0, -1, nil, (LispEval) PRIMITIVE_COND  /* special form */ )
-        && flisp_register_primitive(interp, "lambda",        1, -1, nil, (LispEval) PRIMITIVE_LAMBDA /* special form */ )
-        && flisp_register_primitive(interp, "macro",         1, -1, nil, (LispEval) PRIMITIVE_MACRO  /* special form */ )
-        && flisp_register_primitive(interp, "macroexpand-1", 1,  2, nil, (LispEval) PRIMITIVE_MACROEXPAND /* special form */ )
-        && flisp_register_primitive(interp, "catch",         1,  1, nil, (LispEval) PRIMITIVE_CATCH  /*special form */ )
-        && flisp_register_primitive(interp, "null",          1,  1, nil,            primitiveNullP)
-        && flisp_register_primitive(interp, "type-of",       1,  1, nil,            primitiveTypeOf)
-        && flisp_register_primitive(interp, "consp",         1,  1, nil,            primitiveConsP)
-        && flisp_register_primitive(interp, "intern",        1,  1, type_string,    primitiveIntern)
-        && flisp_register_primitive(interp, "symbol-name",   1,  1, type_symbol,    primitiveSymbolName)
-        && flisp_register_primitive(interp, "same",          2,  2, nil,            primitiveSame)
-        && flisp_register_primitive(interp, "car",           1,  1, nil,            primitiveCar) /* Note: nil|cons */
-        && flisp_register_primitive(interp, "cdr",           1,  1, nil,            primitiveCdr) /* Note: nil|cons */
-        && flisp_register_primitive(interp, "cons",          2,  2, nil,            primitiveCons)
-        && flisp_register_primitive(interp, "open",          1,  2, type_string,    primitiveFopen)
-        && flisp_register_primitive(interp, "close",         1,  1, type_stream,    primitiveFclose)
-        && flisp_register_primitive(interp, "file-info",     1,  1, type_stream,    primitiveFinfo)
-        && flisp_register_primitive(interp, "read",          0,  2, nil,            primitiveRead)
-        && flisp_register_primitive(interp, "eval",          1,  1, nil,            primitiveEval)
-        && flisp_register_primitive(interp, "write",         1,  3, nil,            primitiveWrite)
+        flisp_register_primitive(interp,    "write",         1,  3, nil,            primitiveWrite)
 #if DEBUG_GC
         && flisp_register_primitive(interp, "gc",            0,  0, nil,            primitiveGc)
         && flisp_register_primitive(interp, "gctrace",       0,  0, nil,            primitiveGcTrace)
@@ -2670,18 +2687,15 @@ Object *cerf(Interpreter *interp, FILE *fd)
     object->car = primitiveRead(interp, &object, &interp->global);
     return evalCatch(interp, &object, &interp->global);
 #else
-    Primitive readPrimitive =  { "read",  0, 2, nil, primitiveRead };
-    Primitive evalPrimitive =  { "eval",  1, 1, nil, primitiveEval };
-
     Object f =         (Object) { type_stream, .path = nil, .fd = fd };
     Object fCons =     (Object) { type_cons, .car = &f, .cdr = nil };
-    Object read =      (Object) { type_primitive, .primitive = &readPrimitive };
+    Object read =      (Object) { type_primitive, .primitive = readPrimitive };
     Object readCons =  (Object) { type_cons, .car = &read, .cdr = &fCons };
     if (fd == NULL)
         readCons.cdr = nil;
     Object readApply =  (Object) { type_cons, .car = &readCons, .cdr = nil };
 
-    Object eval =      (Object) { type_primitive, .primitive = &evalPrimitive };
+    Object eval =      (Object) { type_primitive, .primitive = evalPrimitive };
     Object evalCons =  (Object) { type_cons, .car = &eval, .cdr = &readApply };
     Object *evalApply = &(Object) { type_cons, .car = &evalCons, .cdr = nil };
 

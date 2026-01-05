@@ -4,6 +4,9 @@
 
 ## Next
 
+- Cleanup cerf: not so easy to do, but now easier with dynamic primitive loading.
+  - create evalApply and readCons on startup after registering readPrimitve and evalPrimitive
+    then use it in cerf().
 - Make logging mask, and suppress catch messages by default
 - Implement more `(interp subcommand[arg..])` introspection and configuration commands.
   - (flisp output[ fd])
@@ -24,7 +27,6 @@
 - Size reduction:
   - Reduce binary operators to 'and' and 'xor' and write needed rest in Lisp.
 - Tap the potential of the in code documentation via Doxygen.
-- Cleanup cerf: not so easy to do, but now easier with dynamic primitive loading.
 - Hash
   - Add new 'hash' field as uintptr_t to Lisp object struct type union.
   - Initialize each string type object with a hash of 0.
