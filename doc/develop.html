@@ -9,7 +9,7 @@
   <meta content="Georg Lehner &lt;jorge@magma-soft.at&gt;" name="author" />
   <meta content="2023" name="copyright" />
 </head>
-<body>
+<body style="cursor: auto;">
   <h1>Development of and with <i>fLisp</i></h1>
   <h3 id="introduction">Introduction</h3>
   <p>This document explains how to extend and embed&nbsp;<var>fLisp</var> into an application.</p>
@@ -32,7 +32,7 @@
     </li>
     <li>Table of Contents</li>
     <li>
-      <a href="#embedding">Embedding Overview</a>
+      <a href="#embed_overview">Embedding Overview</a>
     </li>
     <li>
       <a href="#c_api">fLisp C Interface</a>
@@ -68,7 +68,10 @@
   <p>Lisp commands (or programs) are handed over to the&nbsp;<code>flisp_eval()</code> function as strings. The input
   is processed within a&nbsp;<a href="interp_ops"><code>catch</code></a>&nbsp;command and the result stored in its
   internal structure. C macros are provided for easy access to the result.</p>
-  <h3>fLisp C Interface</h3>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h3 id="c_api">fLisp C Interface</h3>
   <p><i>fLisp</i> exposes the following public interface functions:</p>
   <dl>
     <dt><code>flisp_new()</code></dt>
@@ -86,7 +89,7 @@
     <dt><code>flisp_register_primitive()</code></dt>
     <dd>Register an extension <i>fLisp</i> function.</dd>
   </dl>
-  <h4>Interpreter creation</h4>
+  <h4>Interpreter Creation</h4>
   <p>A new <i>fLisp</i> interpreter is created with the function <code>flisp_new()</code>. Upon success a pointer to an
   initialized <i>Interpreter</i> structure is returned, which is required for all other <i>fLisp</i> operations. If the
   required memory for the interpreter cannot be allocated a <code>NULL</code> pointer is returned instead.</p>
@@ -95,8 +98,8 @@
   <p><mark>Note: currently only creating one interpreter has been tested.</mark></p>
   <p>The signature of <code>flisp_new()</code> is:</p>
   <blockquote>
-    <code>Interpreter *flisp_new(site_t <var>size</var>, char **<var>argv</var>, char *<var>library_path</var>, FILE
-    *<var>input</var>, FILE *<var>output</var>, FILE* <var>debug</var>)</code>
+    <pre>
+<code>Interpreter *flisp_new(site_t <var>size</var>, char **<var>argv</var>, char *<var>library_path</var>, FILE *<var>input</var>, FILE *<var>output</var>, FILE* <var>debug</var>)</code></pre>
   </blockquote>
   <dl>
     <dt><code><var>size</var></code></dt>
@@ -130,10 +133,11 @@
   amount required by an application and initialize the interpreter with a corresponding <var>size</var> argument.</p>
   <p><var>argv</var>&nbsp;is meant to be set to the applications <var>argv</var> vector, however it can be set to any
   other array of strings if needed.</p>
-  <h4>Interpreter execution</h4>
+  <h4>Interpreter Execution</h4>
   <p>The signature of <code>flisp_eval()</code> is:</p>
   <blockquote>
-    <p><code>void&nbsp;lisp_eval(Interpreter&nbsp;*<var>interp</var>, char&nbsp;*<var>string</var>)</code></p>
+    <pre>
+<code>void flisp_eval(Interpreter *<var>interp</var>, char *<var>string</var>)</code></pre>
   </blockquote>
   <p>If <var>string</var> is not <code>NULL</code> all Lisp expressions in <var>string</var>&nbsp;are evaluated
   sequentually in the interpreter <var>interp</var>.</p>
@@ -141,6 +145,8 @@
   <var>interp</var> is evaluated until end of file.</p>
   <p>If no memory can be allocated for the input string or the input file descriptor is <code>NULL</code> no Lisp
   evaluation takes place and the result is a corresponing error result.</p>
+  <p>During evaluation <i>fLisp</i> sends all output to the default output stream. If it is set to <code>NULL</code> on
+  initialization, output is suppressed altogether.</p>
   <p>After processing the input, the interpreter holds the results corresponding to a <a href=
   "interp_ops"><code>catch</code></a> result in its internal structure. They can be accessed with the following
   C-macros:</p>
@@ -154,47 +160,67 @@
   </dl>
   <p>Check for <code>(FLISP_RESULT_OBJECT(interpreter) != nil)</code> to find out if the result is an error. Then check
   for <code>(FLISP_RESULT_OBJECT(interpreter) == out_of_memory)</code> to see if a fatal condition occured.</p>
-  <p>On error use <code>lisp_write_error()</code> to write the standard error message to a file descriptor of choice,
+  <p>On error use f<code>lisp_write_error()</code> to write the standard error message to a file descriptor of choice,
   or use the above C-macros and <code>FLISP_ERROR_MESSAGE(interpreter)-&gt;string</code> for executing a specific
-  action.</p>
-  <p><i>fLisp</i> sends all output to the default output stream. If it is set to <code>NULL</code> on initialization,
-  output is suppressed altogether.</p>
-  <h4 id="c_api">fLisp C Interface</h4>
+  action. The function <code>flisp_write_object()</code> can be used to write/serialize a result object.The signatures
+  for these two functions are:</p>
   <dl>
-    <dt>&nbsp;</dt>
-    <dd></dd>
-    <dt><code>void&nbsp;lisp_destroy(Interpreter&nbsp;*<var>interp</var>)</code></dt>
-    <dd>Frees all resources used by the interpreter.</dd>
-    <dt>&nbsp;</dt>
-    <dt><code>void&nbsp;lisp_write_object(Interpreter&nbsp;*<var>interp</var>, FILE&nbsp;<var>*fd</var>,
+    <dt><code>void flisp_write_object(Interpreter&nbsp;*<var>interp</var>, FILE&nbsp;<var>*fd</var>,
     Object&nbsp;*<var>object</var>, bool&nbsp;readably)</code></dt>
     <dd>Format <var>object</var> into a string and write it to <var>stream</var>. If <var>readably</var> is true, the
     string can be read in by the interpreter and results in the same object.</dd>
-    <dt><code>void&nbsp;lisp_write_error(Interpreter&nbsp;*<var>interp</var>, FILE&nbsp;<var>*fd</var>)</code></dt>
+    <dt><code>void flisp_write_error(Interpreter&nbsp;*<var>interp</var>, FILE&nbsp;<var>*fd</var>)</code></dt>
     <dd>Format the error <var>object</var> and the error message of the interpreter into a string and write it to
     <var>fd</var>. The <var>object</var> is written with <var>readably</var> <code>true</code>.</dd>
   </dl>
-  <p>&nbsp;</p>
+  <h4>Interpreter Destruction</h4>
+  <p><mark>Note: current applications only use a single interpreter and leave freeing of interpreter memory to the
+  <code>exit()</code> function. Destruction of interpreters is untested and is likely to cause segmentation
+  faults.</mark></p>
+  <p><code>void flisp_destroy(Interpreter&nbsp;*<var>interp</var>)</code></p>
+  <p>Frees all resources used by the interpreter.</p>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
   <h3 id="extensions">Building Extensions</h3>
-  <p>An extensions has to create C functions with the signature:
-  <code>Object&nbsp;*<var>primitive</var>(Interpreter&nbsp;*interp, Object&nbsp;**args, Object&nbsp;**env)</code>,
-  where <var>primitive</var> is a distinct name in C space. This function has to be added to the global variable
-  <code>primitives</code> in the following format:
-  <code>{"<var>name</var>",&nbsp;<var>argMin</var>,&nbsp;<var>argMax</var>,&nbsp;<var>type_check</var>,&nbsp;<var>primitive</var>}</code>.
-  Here <var>name</var> is a distinct name in Lisp space.</p>
-  <p><var>interp</var> is the fLisp interpreter in which <var>primitive</var> is executed. <var>argMin</var> is the
-  minimum number of arguments, <var>argMax</var> is the maximum number of arguments allowed for the function. If
-  <var>argMax</var> is a negative number, arguments must be given in tuples of <var>argMax</var> and the number of
-  tuples is not restricted.</p>
-  <p>When type check is set to on of the <code>TYPE_*</code> C-macros the interpreter assures that all arguments are of
-  the given type and creates a standardized exception otherwise. When type check is set to <code>0</code> the primitive
-  has to take care of type checking by itself. The C-macro <code>CHECK_TYPE</code> helps with this.</p>
-  <p>When creating more then one new objects within a primitive, care has to be taken to register them with the garbage
-  collector. Registration is started with the <code>GC_CHECKPOINT</code> CPP macro.
-  <code>GC_TRACE(<var>name</var>,&nbsp;<var>value</var></code> creates an object variable <var>name</var>, sets it to
-  <var>value</var> and registers it with the garbage collector. The macro <code>GC_RELEASE</code> must be called to
-  finalize the registration. The convenience macro <code>GC_RETURN(<var>object</var>)</code> calls
-  <code>GC_RELEASE</code> and returns <var>object</var>.</p>
+  <h4>Registering Primitives</h4>
+  <p>An extensions has to create C functions, called&nbsp;<dfn>primitives</dfn> with the signature:</p>
+  <blockquote>
+    <pre>
+<code>Object *<var>primitive</var>(Interpreter *interp, Object **args, Object **env)</code></pre>
+  </blockquote>
+  <p><var>primitive</var>&nbsp;must be a distinct name in C space. This signatures is typedef'd to
+  <code>LispEval</code>.</p>
+  <p>To make the primitive available to an fLisp interpreter the following function has to be executed:</p>
+  <blockquote>
+    <pre>
+<code>void flisp_register_primitive(Interpreter *<var>interp</var>, char *<var>name</var>, int <var>min_args</var>, int <var>max_args</var>, Object *<var>args_type</var>, LispEval <var>func</var>)</code></pre>
+  </blockquote>
+  <dl>
+    <dt><var>interp</var></dt>
+    <dd>Interpreter in which to register the primitive.</dd>
+    <dt><var>name</var></dt>
+    <dd>Symbol name to which the primtive is bound in the root environment.</dd>
+    <dt><var>min_args</var></dt>
+    <dd>Minimum number of arguments to be given to the primtive.</dd>
+    <dt><var>max_args</var></dt>
+    <dd>Maximum number of arguments allowed for the primitive. If negative, arguments must be given in tuples of the
+    number and the number of tuples is not restricted. <code>-1</code> means, any number of (individual)
+    arguments.</dd>
+    <dt><var>args_type</var></dt>
+    <dd>An object type symbol or <code>nil</code>. If all arguments must be of the same single type, this type can be
+    given here and the interpreter does type checking. If <var>args_type</var> is set to <code>nil</code>, the
+    interpreter does not do type checking - the primitive has to implement type checking by itself, see below for
+    helper macros.</dd>
+    <dt><var>func</var></dt>
+    <dd>The function pointer of the primitive to register.</dd>
+  </dl>
+  <nav>
+    <a href="#toc">^</a>
+  </nav>
+  <h4>Writing primitives</h4>
+  <p>When a primitive is called from Lisp, the arguments are handed over in the <code>Object **<var>args</var></code>
+  argument. This is a list of Lisp objects.</p>
   <p>Some CPP macros are provided to simplify argument access and validation in primitives:</p>
   <dl>
     <dt><code>FLISP_HAS_ARGS</code></dt>
@@ -205,20 +231,203 @@
     <dt><code>FLISP_ARG_TWO</code></dt>
     <dt><code>FLISP_ARG_THREE</code></dt>
     <dd>Evaluate to the respective argument.</dd>
-    <dt><code>CHECK_TYPE(<var>argument</var>, <var>type</var>, <var>signature</var>)</code></dt>
-    <dd>Assures that the given argument is of the given type. <var>type</var> must be a type variable like
-    <code>type_string</code>. <var>signature</var> is the signature of the primitive followed by
-    <q><code>&nbsp;-&nbsp;</code></q> and the name of the argument to be type checked. This is used to form a
-    standardized <code>wrong-type-argument</code> error message.</dd>
+    <dt><code>FLISP_CHECK_TYPE(<var>argument</var>, <var>type</var>, <var>signature</var>)</code></dt>
+    <dd>Assures that the given <var>argument</var>&nbsp; (e.g. <code>FLISP_ARG_TWO</code>) is of the given type.
+    <var>type</var> must be a type object like <code>type_string</code>. <var>signature</var> is the Lisp signature of
+    the primitive followed by <q><code>&nbsp;-&nbsp;</code></q> and the name of the argument to be type checked. This
+    is used to form a standardized <code>wrong-type-argument</code> error message.</dd>
   </dl>
+  <p>Example:</p>
+  <pre>
+<code>/* (foo integer string) =&gt; 42 - just check if the first argument is an integer and the second a string, then return the integer 42 */
+Object *foo(Interpreter *interp, Object **args, Object **env)
+{
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_integer, "(foo integer string) - integer");
+    FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_string, "(foo integer string) - string");
+    return newInteger(interp, 42);
+}
+</code>…
+    flisp_register_primitive(interp, "foo", 2, 2, nil, foo);
+…
+</pre>
+  <p>Lisp objects are structs with their value as a union field. The following object types are available:</p>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">C symbol</th>
+        <th scope="col">Lisp type symbol</th>
+        <th scope="col">Type&nbsp;</th>
+        <th scope="col">Field(s)</th>
+        <th scope="col">Constructor</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>type_integer</code></td>
+        <td><code>type-integer</code></td>
+        <td><code>int64_t</code></td>
+        <td><code>object-&gt;integer</code></td>
+        <td><code>newInteger(<var>interp</var>, <var>integer</var>)</code></td>
+      </tr>
+      <tr>
+        <td><code>type_double</code></td>
+        <td><code>type-double</code></td>
+        <td><code>double</code></td>
+        <td><code>object-&gt;number</code></td>
+        <td><code>newDouble(<var>interp</var>, <var>double</var>)</code></td>
+      </tr>
+      <tr>
+        <td><code>type_string</code></td>
+        <td><code>type-string</code></td>
+        <td><code>char *</code></td>
+        <td><code>object-&gt;string</code></td>
+        <td><code>newString(<var>interp</var>, <var>string</var>)</code></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><code>newStringWithLength(<var>interp</var>, <var>string</var>, <var>length</var>)</code></td>
+      </tr>
+      <tr>
+        <td><code>type_symbol</code></td>
+        <td><code>type-symbol</code></td>
+        <td><code>char *</code></td>
+        <td><code>object-&gt;string</code></td>
+        <td><code>newSymbol(<var>interp</var>, <var>string</var>)</code></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><code>newSymbolWithLength(<var>interp</var>, <var>string</var>, <var>length</var>)</code></td>
+      </tr>
+      <tr>
+        <td><code>type_cons</code></td>
+        <td><code>type-cons</code></td>
+        <td><code>Object *</code></td>
+        <td><code>object-&gt;car</code>, <code>object-&gt;cdr</code></td>
+        <td><code>newCons(<var>interp</var>, <var>car</var>, <var>cdr</var>)</code></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><var>car</var> and <var>cdr</var> are of type <code>Object **</code></td>
+      </tr>
+      <tr>
+        <td><code>type_lambda</code></td>
+        <td><code>type-lambda</code></td>
+        <td><code>Object *</code></td>
+        <td><code>object-&gt;params</code>,&nbsp;<code>object-&gt;body</code>,&nbsp;<code>object-&gt;env</code></td>
+        <td>n.a.</td>
+      </tr>
+      <tr>
+        <td><code>type_macro</code></td>
+        <td><code>type-macro</code></td>
+        <td><code>Object *</code></td>
+        <td><code>object-&gt;params</code>,&nbsp;<code>object-&gt;body</code>,&nbsp;<code>object-&gt;env</code></td>
+        <td>n.a.</td>
+      </tr>
+      <tr>
+        <td><code>type_primitive</code></td>
+        <td><code>type-primitive</code></td>
+        <td><code>Primitive *</code></td>
+        <td><code>object-&gt;primitive</code></td>
+        <td>n.a.</td>
+      </tr>
+      <tr>
+        <td><code>type_stream</code></td>
+        <td><code>type-stream</code></td>
+        <td>
+          <header>
+            <code>Object *</code>
+          </header>
+        </td>
+        <td><code>object-&gt;path</code>&nbsp;(of&nbsp;<code>type-string</code>)</td>
+        <td><code>newStreamObject(<var>interp</var>, <var>fd</var>, <var>path</var>)</code></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><code>FILE *</code></td>
+        <td><code>object-&gt;fd</code></td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td><code>size_t</code></td>
+        <td><code>object-&gt;len</code></td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The double type is only relevant if using an fLisp interpreter with double extension enabled.</p>
+  <p>The Lisp object constructors will eventually trigger garbage collection. This will move all objects into a new
+  memory region. Therefore when&nbsp;creating more then one object within a primitive care has to be taken to register
+  the objects with the garbage collector. Registration is started with the <code>GC_CHECKPOINT</code>&nbsp;macro.
+  <code>GC_TRACE(<var>name</var>,&nbsp;<var>value</var>)</code> creates a traced object variable
+  <var>name</var>&nbsp;of type Object **, sets it to <var>value</var>&nbsp;which must be of type <code>Object *</code>
+  and registers it with the garbage collector. The macro <code>GC_RELEASE</code> must be called to finalize the
+  registration. The convenience macro <code>GC_RETURN(<var>object</var>)</code> calls <code>GC_RELEASE</code> and
+  returns <var>object</var>.</p>
+  <p>Example:</p>
+  <pre>
+<code>/* (bar) =&gt; (nil . 42) - return a cons with nil and the integer 42 */
+#if USING_GC_RELEASE
+Object *bar(Interpreter *interp, Object **args, Object **env)
+{
+  GC_CHECKPOINT;
+  GC_TRACE(gcAnswer, newInteger(interp, 42));
+  GC_RETURN(newCons(interp, &amp;nil, gcAnswer));
+}</code>
+<code>#else
+Object *bar(Interpreter *interp, Object **args, Object **env)
+{
+    Object *object;
+    GC_CHECKPOINT;
+    GC_TRACE(gcAnswer, newInteger(interp, 42));
+    object = newCons(interp, &amp;nil, gcAnswer);
+    GC_RELEASE;
+    return object;
+}
+#endif
+</code>…
+    flisp_register_primitive(interp, "bar", 0, 0, nil, bar);
+…</pre>
   <nav>
-    <a href="#toc">^</a>
+    <p><a href="#toc">^</a></p>
+    <h4>fLisp Constants</h4>
+    <p>It is often desirable to introduce application specific symbols. Symbols take the role of enums or are needed to
+    create error codes. In order to use symbols both from C code and from Lisp, they must not be subject to garbage
+    collection. The <i>fLisp</i> garbage collector skips all objects which are allocated outside of the Lisp object
+    area and the <code>bind</code> and&nbsp;<code>setq</code> oberations do not allow to set a new value for such an
+    object. To create such a <q>constant</q> use <code>flisp_register_constant(<var>interp</var>, <var>symbol</var>,
+    <var>value</var>)</code>. Here is an example usage where the symbol <code>foobar</code> is registered to have the
+    value 42.:</p>
+    <pre>
+<code>Object * foobar = &amp;(Object) { NULL, .string = "foobar" };
+Object * answer = &amp;(Object) { NULL, .integer = 42 };
+…
+    anser-&gt;type = type_integer;
+    flisp_register_constant(interp, foobar, answer);
+…</code>
+</pre>
+    <p>The type of a statically allocated object can only be set at runtime.
+    <code>flisp_register_constant()</code>&nbsp;sets the type of the symbol to <code>type_symbol</code>, but does not
+    touch the type of the value. This has to be done by the application code.</p>
+    <p>If the string length of the symbol name exceeds 11 characters the definition of the symbol requires the
+    following notation:</p>
+    <pre>
+<code>…
+Object * very_long_symbol_name = (Object *) (&amp;(Symbol) { NULL, .string = "very long symbol name" });</code>​​​​​​​
+<code>…</code>
+</pre>
+    <p><a href="#toc">^</a></p>
   </nav>
-  <p><!--
-    Emacs:
-    Local Variables:
-    fill-column: 120
-    End:
-  --></p>
 </body>
 </html>
