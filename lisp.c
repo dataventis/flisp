@@ -1922,18 +1922,6 @@ Object *primitiveGcTrace(Interpreter *interp, Object **args, Object **env)
 {
     return interp->gcTop;
 }
-Object *primitiveSymbols(Interpreter *interp, Object **args, Object **env)
-{
-    return interp->symbols;
-}
-Object *primitiveGlobal(Interpreter *interp, Object **args, Object **env)
-{
-    return interp->global;
-}
-Object *primitiveEnv(Interpreter *interp, Object **args, Object **env)
-{
-    return *env;
-}
 #endif
 Object *primitiveThrow(Interpreter *interp, Object **args, Object **env)
 {
@@ -2357,6 +2345,34 @@ Object *primitiveInterp(Interpreter *interp, Object **args, Object **env)
         }
         return &(interp->input);
     }
+    if (!strcmp(FLISP_ARG_ONE->string, "symbols")) {
+        return (interp->symbols);
+    }
+    if (!strcmp(FLISP_ARG_ONE->string, "global")) {
+        return interp->global;
+    }
+    if (!strcmp(FLISP_ARG_ONE->string, "env")) {
+        if (FLISP_HAS_ARG_TWO) {
+            FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_symbol, "(interp env[ field[ env]]) - field");
+            Object *e = *env;
+            if (FLISP_HAS_ARG_THREE) {
+                FLISP_CHECK_TYPE(FLISP_ARG_THREE, type_env, "(interp env[ field[ env]]) - env");
+                e = FLISP_ARG_THREE;
+            }
+            if (!strcmp(FLISP_ARG_TWO->string, "parent"))
+                return e->parent;
+            if (!strcmp(FLISP_ARG_TWO->string, "vars"))
+                return e->vars;
+            if (!strcmp(FLISP_ARG_TWO->string, "vals"))
+                return e->vals;
+            exceptionWithObject(interp, FLISP_ARG_TWO, invalid_value,
+                        "(interp env[ field[ env]]) - field must be one of :parent, :vars, :vals");
+        }
+        /* Note: This one fails in the global environment with an
+         * infinite nested list of (nil "" nil) or so */
+        return *env;
+    }
+
     exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value,
                             "(flisp cmd[ arg..]) - unknown command");
 }

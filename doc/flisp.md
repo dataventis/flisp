@@ -392,18 +392,21 @@ by the type of objects they operate on.
 
 #### Interpreter Operations
 
-`(progn[ «expr»..])` ⇒ *val*<sub>*n*</sub>  
+`(progn[ «expr»..])` ⇒ *val*<sub>*n*</sub>
+
 Each *expr* is evaluated, the value of the last is returned. If no
 *expr* is given, `progn` returns `nil`.
 
-`(cond[ «clause»..])` ⇒ *pred*<sub>*n*</sub>\|*val*<sub>*n*</sub>\|`nil`  
+`(cond[ «clause»..])` ⇒ *pred*<sub>*n*</sub>\|*val*<sub>*n*</sub>\|`nil`
+
 Each *clause* is of the form `(«pred»[ «action» ..])`. `cond` evaluates
 each *clause* in turn. If *pred* evaluates to `nil`, the next *clause*
 is tested. If *pred* evaluates not to `nil` and if there is no *action*
 the value of *pred* is returned, otherwise `(progn «action» ..)` is
 returned and no more *clause*s are evaluated.
 
-`(bind «symbol» «value»[ «globalp»)` ⇒ *value* <u>f</u>  
+`(bind «symbol» «value»[ «globalp»)` ⇒ *value* <u>f</u>
+
 Create or update *symbol* and bind it to *value*. Return value. First
 *symbol* is looked up in the current environment, then recursively in
 the parent environments. If it is not found, it is created in the
@@ -411,32 +414,41 @@ current environment as long as *globalp* is `nil` or omitted. If
 *globalp* is not `nil` *symbol* is always created in the global (top
 level) environment.
 
-`(lambda «params» «body»)` ⇒ *lambda*  
+`(lambda «params» «body»)` ⇒ *lambda*
+
 Returns a *lambda* function described by *body*, which accepts zero or
 more arguments passed as list in the parameter *params*.
 
-`(lambda ([«param» ..]) «body»)` <u>s</u>  
+`(lambda ([«param» ..]) «body»)` <u>s</u>
+
 Returns a *lambda* function which accepts the exact number of arguments
 given in the list of *param*s.
 
-`(lambda («param»[ «param»..] . «opt») «body»)` <u>s</u>  
+`(lambda («param»[ «param»..] . «opt») «body»)` <u>s</u>
+
 Returns a *lambda* function which requires at least the exact number of
 arguments given in the list of *param*s. All extra arguments are passed
 as a list in the parameter *opt*.
 
-`(macro «params» «body»)` ⇒ *macro*  
-`(macro ([«param» ..]) «body»)` <u>s</u>  
-`(macro («param»[ «param»..] . «opt») «body»)` <u>s</u>  
+`(macro «params» «body»)` ⇒ *macro*
+
+`(macro ([«param» ..]) «body»)` <u>s</u>
+
+`(macro («param»[ «param»..] . «opt») «body»)` <u>s</u>
+
 These forms return a macro function. Parameter handling is the same as
 with lambda.
 
-`(quote «expr»)` ⇒ *expr*  
+`(quote «expr»)` ⇒ *expr*
+
 Returns *expr* without evaluating it.
 
-`(eval «expr»)` ⇒ *o*  
+`(eval «expr»)` ⇒ *o*
+
 Evaluates *expr* and returns the result.
 
-`(catch «expr»)` ⇒ *errinfo* <u>D</u>  
+`(catch «expr»)` ⇒ *errinfo* <u>D</u>
+
 Evaluates *expr* and returns a list with three elements:
 
 *error_type*  
@@ -448,18 +460,33 @@ A human readable error message.
 *object*  
 The result of the the expression or the object in error.
 
-`(throw «result» «message»[ «object»])` <u>D</u>  
+`(throw «result» «message»[ «object»])` <u>D</u>
+
 Throws an exception, stopping any further evaluation. *result* is the
 error type symbol, *message* is a human readable error string and
 *object* is the object in error, if any.
 
-`(interp «cmd»[ «arg»..])` <u>f</u>  
+`(interp «cmd»[ «arg»..])` <u>f</u>
+
 Interpreter introspection. The following commands are available
 
 `(interp version)` ⇒ *string* .. returns the version string of fLisp.
 
 `(interp input[ «fd»])` ⇒ *stream* .. returns and optionally sets the
-input stream of the interpreter.
+input stream of the interpreter.  
+`(interp global)`  ⇒ *env*.. returns the global environment.
+
+`(interp env[ field[ «env»]])`  ⇒ *o*.. returns the
+current environment, one of its fields given as symbols `parent`,
+`vars`, `vals`, or the given field of the given environemnt *env*.
+
+ 
+
+ 
+
+ 
+
+ 
 
 #### Input / Output and Others
 

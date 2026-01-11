@@ -443,7 +443,15 @@
     <dd>Interpreter introspection. The following commands are available</dd>
     <dd><code>(interp version)</code> ⇒ <var>string</var> .. returns the version string of fLisp.</dd>
     <dd><code>(interp input[ <var>fd</var>])</code> ⇒ <var>stream</var> .. returns and optionally sets&nbsp;the input
-    stream of the interpreter.</dd>
+    stream of the interpreter.<br />
+    <code>(interp global)</code>&nbsp; ⇒ <i>env</i>.. returns the global environment.</dd>
+    <dd><code>(interp env[ field[ <var>env</var>]])</code>&nbsp; ⇒ <i>o</i>.. returns the
+    current&nbsp;environment,&nbsp;one of its fields given as symbols <code>parent</code>, <code>vars</code>,
+    <code>vals</code>, or the given field of the given environemnt <var>env</var>.</dd>
+    <dt>&nbsp;</dt>
+    <dt>&nbsp;</dt>
+    <dt>&nbsp;</dt>
+    <dt>&nbsp;</dt>
   </dl>
   <h4 id="in_out">Input / Output and Others</h4>
   <dl>
