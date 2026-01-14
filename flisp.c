@@ -3,6 +3,7 @@
  */
 
 #include <stdlib.h>
+#include <errno.h>
 #include "lisp.h"
 
 #ifdef FLISP_DOUBLE_EXTENSION
@@ -21,8 +22,9 @@ void fatal(char *msg)
 
 int main(int argc, char **argv)
 {
-    char *rcfile, *debug_file;
+    char *rcfile, *debug_file, *size_string;
     FILE *debug_fd = NULL, *input_fd = stdin;
+    long long size;
     Interpreter *interp;
 
     if ((rcfile = getenv("FLISPRC")) == NULL)
@@ -36,7 +38,13 @@ int main(int argc, char **argv)
         if ((debug_fd = fopen(debug_file, "w")) == NULL)
             fatal("failed to open debug file");
 
-    interp = flisp_new(0, argv, NULL, input_fd, stdout, debug_fd);
+    if ((size_string=getenv("FLISP_SIZE")) != NULL) {
+        size = strtoll(size_string, NULL, 16);
+        if (errno == ERANGE || errno == EINVAL)
+            fatal("invalid FLISP_SIZE");
+    }
+    
+    interp = flisp_new((size_t) size, argv, NULL, input_fd, stdout, debug_fd);
     if (interp == NULL)
         fatal("fLisp interpreter initialization failed");
 
