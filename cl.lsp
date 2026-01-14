@@ -1,6 +1,9 @@
+(require 'flisp)
+
 (setq first car)
 (setq rest cdr)
 (setq second cadr)
+(setq third caddr)
 (defun 1+ (n) (+ 1 n))
 (defun endp (l)
   (cond
@@ -12,12 +15,12 @@
     ((null result-type) nil)
     ((eq result-type 'list)
      ;; Fake map with just unary function
-     (mapcar f (car lists))
+     (mapcar function (car lists))
      )
     (t (throw invalid-value
 	 "(map result-type function[ list..]) - result-type unsupported"
 	 result-type ))))
-(defun identity (o) o)
+(setq identity progn)
 
 ;;; CL: (merge type l1 l2 p[ key])
 ;;; (merge l1 l2 p[ key])
@@ -52,3 +55,11 @@
 	    (merge
 	     (sort (nthcdr (i/ (length l) 2) l) p key)
 	     (sort (nfirst (i/ (length l) 2) l) p key) p key) )))
+
+;;; Note: fake member, w/o key and test
+(setq member memq)
+
+;;; Note: not compliant: we do not return the mismatch index.
+(defun string< (s1 s2)
+  (i> 0 (string-compare s1 s2)) )
+
