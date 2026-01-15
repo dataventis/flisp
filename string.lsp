@@ -77,16 +77,14 @@
 ;; Split string s at each substring f and return list of parts.
 ;; If f is the empty string, split all characters.
 ;;
-;; Note: this is painfully slow, (string-split "" s) for an s with about 1100 chars is several minutes
-;;   tip: replace append with cons and return (reverse parts)
 (defun string-split (f s)
   (let loop ((parts nil) (s s) (i 0) (l (length f)))
        (cond
-	 ((and (string-empty-p s) (string-empty-p f)) parts)
-	 ((null (setq i (string-search f s))) (append parts (list s)))
+	 ((and (string-empty-p s) (string-empty-p f)) (reverse parts))
+	 ((null (setq i (string-search f s))) (reverse (cons s parts)))
 	 (t
 	  (loop
-	   (append parts (list (substring s 0 (cond ((i= 0 l) 1) (t i)))))
+	   (cons (substring s 0 (cond ((i= 0 l) 1) (t i))) parts)
 	   (substring s (+ i (max l 1)))
 	   0
 	   l )))))
