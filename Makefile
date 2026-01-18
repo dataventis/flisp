@@ -34,7 +34,7 @@ LIBRARIES = libflisp.a libflispd.a
 RC_FILES = init.lsp
 HEADER = lisp.h file.h double.h
 
-LISPLIB = core.lsp flisp.lsp string.lsp file.lsp
+LISPLIB = flisp.lsp string.lsp file.lsp cl.lsp
 SOURCES = flisp.c lisp.c lisp.h double.c double.h file.c file.h
 
 DOCFILES = README.md doc/flisp.html doc/develop.html doc/history.html doc/implementation.html
@@ -172,7 +172,7 @@ clean: FORCE
 	-$(RM) -f $(MOREDOCS)
 	-$(RM) -f f.log
 	-$(RM) -f test/test.lsp  test/f.log
-	-$(RM) -rf debian/flisp debian/flisp-dev
+	-$(RM) -rf debian/flisp debian/flisp-dev debian/flisp-common debian/flisp-doc
 
 deb: FORCE
 	dpkg-buildpackage -b -us -uc
@@ -196,11 +196,13 @@ install-lib: $(RC_FILES) $(LISPLIB) FORCE
 	-$(MKDIR) -p $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(CP) $(RC_FILES) $(LISPLIB) $(DESTDIR)$(DATADIR)/$(PACKAGE)
 
-install-dev: install-lib $(LIBRARIES) $(HEADER) flisp.pc flispd.pc FORCE
+install-dev: $(LIBRARIES) $(HEADER) core.lsp flisp.pc flispd.pc FORCE
 	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)
 	-$(CP) $(LIBRARIES) $(DESTDIR)$(LIBDIR)
 	-$(MKDIR) -p $(DESTDIR)$(INCDIR)/$(PACKAGE)
 	-$(CP) $(HEADER) $(DESTDIR)$(INCDIR)/$(PACKAGE)
+	-$(MKDIR) -p $(DESTDIR)$(DATADIR)/$(PACKAGE)
+	-$(CP) core.lsp $(DESTDIR)$(DATADIR)/$(PACKAGE)
 	-$(MKDIR) -p $(DESTDIR)$(LIBDIR)/pkgconfig
 	-$(CP) flisp.pc flispd.pc $(DESTDIR)$(LIBDIR)/pkgconfig
 

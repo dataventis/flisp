@@ -1,3 +1,17 @@
+;;; leg20260118: fLisp Common Lisp compatibility
+;;;
+;;; This file collects implementations and aliases of Common Lisp
+;;; functions to increase compatibility with source written in that
+;;; language. Compatibility is like in C: "less then 80% of the source
+;;; has to be rewritten".
+;;;
+;;; Currently the provided functions are required by a certain
+;;; implementation of huffman coding.
+;;;
+;;; Some functions are NOT compliant but share the same name with the
+;;; respective Common Lisp function, others are helper functions and
+;;; not part of Common Lisp: these are bugs.
+
 (require 'flisp)
 
 (setq first car)
@@ -10,16 +24,7 @@
     ((null l))
     ((consp l) nil)
     (t (throw invalid-value "(endp l) - l is neither list nor nil" l)) ))
-(defun map (result-type function . lists)
-  (cond
-    ((null result-type) nil)
-    ((eq result-type 'list)
-     ;; Fake map with just unary function
-     (mapcar function (car lists))
-     )
-    (t (throw invalid-value
-	 "(map result-type function[ list..]) - result-type unsupported"
-	 result-type ))))
+
 (setq identity progn)
 
 ;;; CL: (merge type l1 l2 p[ key])
@@ -64,3 +69,4 @@
 (defun string< (s1 s2)
   (i> 0 (string-compare s1 s2)) )
 
+(provide 'cl)

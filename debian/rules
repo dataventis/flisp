@@ -9,7 +9,9 @@ build:
 	@make PREFIX=/usr
 
 binary:
-	make install DESTDIR=debian/flisp PREFIX=/usr
+	make install-bin DESTDIR=debian/flisp PREFIX=/usr
 	make install-dev DESTDIR=debian/flisp-dev PREFIX=/usr
+	make install-lib DESTDIR=debian/flisp-common PREFIX=/usr
+	make install-doc install-moredocs DESTDIR=debian/flisp-doc PREFIX=/usr
 	dh_gencontrol
 	dh_builddeb
