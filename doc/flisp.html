@@ -290,7 +290,8 @@
     <dt><dfn>stream</dfn></dt>
     <dd>An input/output stream.</dd>
   </dl>
-  <p>Objects are immutable; functions either create new objects or return existing ones.</p>
+  <p>Objects are immutable; functions either create new objects or return existing ones, with the single exception of
+  the <code>nreverse</code> funciton, which is included for speed.</p>
   <p>Characters do not have their own type. A single character is represented by a <i>string</i> with length one.</p>
   <h4 id="evaluation">Environments, Functions, Evaluation</h4>
   <p>All operations of the interpreter take place in an environment. An <dfn>environment</dfn> is a collection of named
@@ -508,6 +509,8 @@
     <dd>Returns the type symbol of <var>object</var>.</dd>
     <dt><code>(consp <var>object</var>)</code> ⇒ <i>p</i></dt>
     <dd>Returns <code>t</code> if <var>object</var> is of type cons, otherwise <code>nil</code>.</dd>
+    <dt><code>(nreverse <var>l</var>)</code> ⇒ <var>l'</var></dt>
+    <dd>Destructively reverses list <var>l</var> and returns it.</dd>
     <dt><code>(intern <var>string</var>)</code> ⇒ <var>symbol</var></dt>
     <dd>Returns the symbol with name <var>string</var>. If the symbol does not exist yet it is created.</dd>
     <dt><code>(symbol-name <var>object</var>)</code> ⇒ <var>string</var></dt>

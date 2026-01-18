@@ -80,8 +80,8 @@
 (defun string-split (f s)
   (let loop ((parts nil) (s s) (i 0) (l (length f)))
        (cond
-	 ((and (string-empty-p s) (string-empty-p f)) (reverse parts))
-	 ((null (setq i (string-search f s))) (reverse (cons s parts)))
+	 ((and (string-empty-p s) (string-empty-p f)) (nreverse parts))
+	 ((null (setq i (string-search f s))) (nreverse (cons s parts)))
 	 (t
 	  (loop
 	   (cons (substring s 0 (cond ((i= 0 l) 1) (t i))) parts)

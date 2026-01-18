@@ -222,7 +222,7 @@
 
 (defun map (f . lists)
   (let loop ((result  nil) (lists lists))
-    (if (memq nil lists) (reverse result)
+    (if (memq nil lists) (nreverse result)
 	(setq result (cons (apply f (mapcar car lists)) result))
 	(loop result (mapcar cdr lists) ))))
 

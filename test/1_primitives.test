@@ -5,7 +5,7 @@
 
 export FLISPRC=
 
-tap 184
+tap 187
 
 [ -x ../flispd ]
 ok flisp-1 flisp exists and is executable;
@@ -287,6 +287,15 @@ flisp_expr; ok consp-5  consp list is t
 
 IN="(consp consp)" OUT='nil'
 flisp_expr; ok consp-5  consp lambda is nil
+
+IN="(nreverse nil)" OUT="nil"
+flisp_expr; ok nreverse-1 nreveverse nil is nil
+
+IN="(nreverse '(1))" OUT="(1)"
+flisp_expr; ok nreverse-2 nreveverse single element is single element
+
+IN="(nreverse '(a 1 b 2))" OUT="(2 b 1 a)"
+flisp_expr; ok nreverse-3 nreverse four elements is reverse of list
 
 # intern
 IN='(type-of (intern "SYMBOL"))' OUT='type-symbol'

@@ -60,11 +60,11 @@
 ;;; Note: conforms to Elisp, though I'd rather 'nil' the empty string, . and ..
 (defun file-name-nondirectory (s)
   (cond	((string-equal s "/") "")
-	(t  (car (reverse (string-split "/" s)))) ))
+	(t  (car (nreverse (string-split "/" s)))) ))
 
 (defun file-name-extension (s)
   (let ((name (file-name-nondirectory s)))
-    (let ((extension (car (reverse (string-split "." name)))))
+    (let ((extension (car (nreverse (string-split "." name)))))
       (cond
 	((eq extension name)  nil)
 	((eq extension "")    nil) ; . and ..

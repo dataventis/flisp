@@ -278,7 +278,8 @@ Anonymous function without parameter evaluation.
 An input/output stream.
 
 Objects are immutable; functions either create new objects or return
-existing ones.
+existing ones, with the single exception of the `nreverse` funciton,
+which is included for speed.
 
 Characters do not have their own type. A single character is represented
 by a *string* with length one.
@@ -551,6 +552,9 @@ Returns the type symbol of *object*.
 
 `(consp «object»)` ⇒ *p*  
 Returns `t` if *object* is of type cons, otherwise `nil`.
+
+`(nreverse «l»)` ⇒ *l'*  
+Destructively reverses list *l* and returns it.
 
 `(intern «string»)` ⇒ *symbol*  
 Returns the symbol with name *string*. If the symbol does not exist yet

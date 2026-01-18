@@ -870,11 +870,13 @@ int isSymbolChar(int ch)
     return isalnum(ch) || strchr(valid, ch);
 }
 
-Object *reverseList(Object * list)
+Object *reverseList(Interpreter *interp, Object *list)
 {
     Object *object = nil;
 
     while (list != nil) {
+        if (list->type != type_cons)
+            exceptionWithObject(interp, list, invalid_value, "(nreverse list) - list not a proper list");
         Object *swap = list;
         list = list->cdr;
         swap->cdr = object;
@@ -1134,7 +1136,7 @@ Object *readList(Interpreter *interp, FILE *fd)
         if (ch == EOF)
             exception(interp, read_incomplete, "unexpected end of stream in list");
         if (ch == ')')
-            return (list == nil) ? nil : reverseList(list);
+            return (list == nil) ? nil : reverseList(interp, list);
         if (ch == '.' && !isSymbolChar(streamPeek(interp, fd))) {
             if (last == nil)
                 exception(interp, invalid_read_syntax, "unexpected dot at start of list");
@@ -1149,7 +1151,7 @@ Object *readList(Interpreter *interp, FILE *fd)
             if ((ch = peekNext(interp, fd)) != ')')
                 exception(interp, invalid_read_syntax, "unexpected object at end of dotted list");
             readNext(interp, fd);
-            list = reverseList(*gcList);
+            list = reverseList(interp, *gcList);
             (*gcList)->cdr = last;
             return list;
         } else {
@@ -1910,6 +1912,11 @@ Object *primitiveCons(Interpreter *interp, Object **args, Object **env)
     return newCons(interp, &(*args)->car, &(*args)->cdr->car);
 }
 
+Object *primitiveNreverse(Interpreter *interp, Object **args, Object **env)
+{
+    return reverseList(interp, (*args)->car);
+}
+
 #if DEBUG_GC
 // Introspection ///////
 Object *primitiveGc(Interpreter *interp, Object **args, Object **env)
@@ -2429,6 +2436,7 @@ bool flisp_primitives_register(Interpreter *interp)
          && flisp_register_primitive(interp, "null",          1,  1, nil,            primitiveNullP)
          && flisp_register_primitive(interp, "type-of",       1,  1, nil,            primitiveTypeOf)
          && flisp_register_primitive(interp, "consp",         1,  1, nil,            primitiveConsP)
+         && flisp_register_primitive(interp, "nreverse",      1,  1, nil,            primitiveNreverse)
          && flisp_register_primitive(interp, "intern",        1,  1, type_string,    primitiveIntern)
          && flisp_register_primitive(interp, "symbol-name",   1,  1, type_symbol,    primitiveSymbolName)
          && flisp_register_primitive(interp, "same",          2,  2, nil,            primitiveSame)

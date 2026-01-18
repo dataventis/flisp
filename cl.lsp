@@ -28,14 +28,15 @@
   (let ((key  (if opt (car opt)  identity)))
     (let loop ((l1 l1) (l2 l2) (r nil))
 	 (cond
-	   ((and (null l1) (null l2))  (reverse r))
-	   ((null l1)  (append (reverse r) l2))
-	   ((null l2)  (append (reverse r) l1))
+	   ((and (null l1) (null l2))  (nreverse r))
+	   ((null l1)  (append (nreverse r) l2))
+	   ((null l2)  (append (nreverse r) l1))
 	   ((p (key (car l1)) (key (car l2))) (loop (cdr l1) l2 (cons (car l1) r)))
 	   ((p (key (car l2)) (key (car l1))) (loop l1 (cdr l2) (cons (car l2) r)))
 	   (t  (loop (cdr l1) (cdr l2) (cons (car l1) (cons (car l2) r)))) ))))
 
 ;;; Not part of Common Lisp
+;;; We should implement (last l[ n]) and (butlast l[ n]) instead
 (defun nfirst (i l)
   (cond
     ((i= 0 i)  nil)
