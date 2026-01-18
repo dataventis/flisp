@@ -220,6 +220,12 @@
     ((eq o (car l)) l)
     (t (memq o (cdr l)))))
 
+(defun map (f . lists)
+  (let loop ((result  nil) (lists lists))
+    (if (memq nil lists) (reverse result)
+	(setq result (cons (apply f (mapcar car lists)) result))
+	(loop result (mapcar cdr lists) ))))
+
 ;;; Wrap all math to Integer operations
 (defun nfold (f i l);  (3)  (1 2 3)
   (cond

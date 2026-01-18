@@ -701,7 +701,7 @@
       <var>list</var> is empty return <var>start</var>.</dd>
       <dt><code>(flip <var>func</var>)</code> ⇒ <i>lambda</i>&nbsp;<u>f</u></dt>
       <dd>Returns a lambda which calls binary <var>func</var> with it's two arguments reversed (flipped).</dd>
-      <dt><code>(reverse <var>l</var>)</code> ⇒ <i>list</i></dt>
+      <dt><code>(reverse <var>l</var>)</code> ⇒ <var>list</var></dt>
       <dd>Returns a list with all elements of <var>l</var> in reverse order</dd>
       <dt><code>(append [list ..][&nbsp;a])</code> ⇒ <i>list'</i></dt>
       <dd>Append all elements in all <var>list</var>s into a single list. If atom <var>a</var> is present, make it a
@@ -730,6 +730,8 @@
       <dt><code>(memq <var>arg</var> <var>list</var>)</code> ⇒ <i>list'</i></dt>
       <dd>If <var>arg</var> is contained in <var>list</var>, returns the sub list of <var>list</var> starting with the
       first occurrence of <var>arg</var>, otherwise returns <code>nil</code>.</dd>
+      <dt><code>(map <var>func</var>[ list..])</code> ⇒ <var>l</var> <u>Cs</u></dt>
+      <dd>Return the list of the results of applying func to each element of all <var>list</var>s in turn.</dd>
       <dt><code>(nfold <var>f</var> <var>i</var> <var>l</var>)</code> ⇒ <i>o</i></dt>
       <!--{C}%3C!%2D%2D%20dynmically%20typed%20math%20%2D%2D%3E-->
       <dd><q>Number fold</q>: <code>left-fold</code>s binary function <var>f</var> on list <var>l</var> with initial

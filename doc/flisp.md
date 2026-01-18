@@ -832,6 +832,10 @@ throws a type exception.
 If *arg* is contained in *list*, returns the sub list of *list* starting
 with the first occurrence of *arg*, otherwise returns `nil`.
 
+`(map «func»[ list..])` ⇒ *l* <u>Cs</u>  
+Return the list of the results of applying func to each element of all
+*list*s in turn.
+
 `(nfold «f» «i» «l»)` ⇒ *o*  
 “Number fold”: `left-fold`s binary function *f* on list *l* with initial
 value *i*. Helper function for n-ary generic number type arithmetic.
