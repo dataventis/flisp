@@ -69,6 +69,6 @@ only the files required for development.
 Extensive documentation is available in the `doc` directory in POSHdoc/HTML and Markdown format.
 
 - [Manual](doc/flisp.html) ([Markdown](doc/flisp.md)).
-- [Development](doc/develop.html) of and with fLisp ([Markdown](doc/develop.md).
+- [Development](doc/develop.html) of and with fLisp ([Markdown](doc/develop.md)).
 - [Implementation](doc/implementation.html) Details ([Markdown](doc/implementation.md)).
 - [History](doc/history.html) Details ([Markdown](doc/history.md)).
