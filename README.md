@@ -5,7 +5,7 @@ programming language. It is designed to be embeddable in applications
 as extension language.
 
 fLisp is embedded into the
-(Femto)[https://github.com/jorge-leon/femto] editor.
+[Femto](https://github.com/jorge-leon/femto) editor.
 
 > A designer knows he has achieved perfection not when there is
 > nothing left to add, but when there is nothing left to take away.
@@ -27,8 +27,8 @@ interpreter, the choice fell on "fLisp".
   to drive real world applications.
 - To be rock stable, predictable and consistent.
 - To consume as little resources as possible.
-- To be easy to understand without extensive study (to encourage further
-  experimentation).
+- To be easy to understand without extensive study [to encourage further
+  experimentation].
 
 Size by version:
 
@@ -47,7 +47,7 @@ The default Makefile target:
 
 creates:
 - flisp .. The flisp command line utility.
-- flispd .. The command line utility with floating point (double) support.
+- flispd .. The command line utility with floating point [double] support.
 - libflisp.a and libflispd.a .. The libraries for embedding fLisp in other applications.
 
     make install
@@ -68,7 +68,7 @@ only the files required for development.
 
 Extensive documentation is available in the `doc` directory in POSHdoc/HTML and Markdown format.
 
-- (Manual)[doc/flisp.html] ((Markdown)[doc/flisp.md]).
-- (Development)[doc/develop.html] of and with fLisp ((Markdown)[doc/develop.md]).
-- (Implementation)[doc/implementation.html] Details ((Markdown)[doc/implementation.md]).
-- (History)[doc/history.html] Details ((Markdown)[doc/history.md]).
+- [Manual](doc/flisp.html) ([Markdown](doc/flisp.md)).
+- [Development](doc/develop.html) of and with fLisp ([Markdown](doc/develop.md).
+- [Implementation](doc/implementation.html) Details ([Markdown](doc/implementation.md)).
+- [History](doc/history.html) Details ([Markdown](doc/history.md)).
