@@ -418,7 +418,7 @@ Object *memoryAllocObject(Interpreter *interp, Object *type, size_t size)
 
     /* If not done already allocate to space */
     if (!interp->memory->fromSpace) {
-        fl_debug(interp, "memoryAllocObject: allocate fromSpace: %lu bytes\n", interp->memory->capacity);
+        fl_debug(interp, "memoryAllocObject: allocate fromSpace: %zu bytes\n", interp->memory->capacity);
         if (!(interp->memory->fromSpace = mmap(NULL, interp->memory->capacity, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0)))
             fl_fatal("OOM, allocating from space, exiting\n", 64);
     }
