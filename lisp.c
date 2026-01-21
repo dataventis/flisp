@@ -2293,10 +2293,34 @@ Object *stringCompare(Interpreter *interp, Object **args, Object **env)
     return newInteger(interp, strcmp(FLISP_ARG_ONE->string, FLISP_ARG_TWO->string));
 }
 
-// (length s)
-Object *stringLength(Interpreter *interp, Object **args, Object **env)
+Object *byteLength(Interpreter *interp, Object **args, Object **env)
 {
     return newInteger(interp, strlen(FLISP_ARG_ONE->string));
+}
+
+size_t utf8char_size(char c)
+{
+    if ((c & 0x80) == 0) return 1;
+    if ((c & 0xC0) == 0xC0) return 2;
+    if ((c & 0xE0) == 0xE0) return 3;
+    if ((c & 0xF8) == 0xF8) return 4;
+    return 0;
+
+}
+
+Object *stringLength(Interpreter *interp, Object **args, Object **env)
+{
+    size_t n = 0, l = 0;
+    char *i = FLISP_ARG_ONE->string;
+
+    while (*i != '\0') {
+        l = utf8char_size(*i);
+        if (l == 0)
+            exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(string-length s) - s not utf-8 encoded");
+        i += l;
+        n++;
+    }
+    return newInteger(interp, n);
 }
 
 /** (string-search needle haystack)
@@ -2485,6 +2509,7 @@ bool flisp_primitives_register(Interpreter *interp)
         && flisp_register_primitive(interp, ">>",            2,  2, type_integer,   integerShiftRight)
         && flisp_register_primitive(interp, "~",             1,  1, type_integer,   integerNot)
         && flisp_register_primitive(interp, "string-compare",2,  2, type_string,    stringCompare)
+        && flisp_register_primitive(interp, "byte-length",   1,  1, type_string,    byteLength)
         && flisp_register_primitive(interp, "string-length", 1,  1, type_string,    stringLength)
         && flisp_register_primitive(interp, "string-append", 2,  2, type_string,    stringAppend)
         && flisp_register_primitive(interp, "substring",     1,  3, nil,            stringSubstring)
