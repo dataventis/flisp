@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 {
     char *rcfile, *debug_file, *size_string;
     FILE *debug_fd = NULL, *input_fd = stdin;
-    long long size;
+    long long size = 0;
     Interpreter *interp;
 
     if ((rcfile = getenv("FLISPRC")) == NULL)
