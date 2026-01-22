@@ -1235,7 +1235,7 @@ Object *readExpr(Interpreter *interp, FILE *fd)
             return readNumberOrSymbol(interp, fd);
         }
         else
-            exception(interp, invalid_read_syntax, "unexpected character: '%c'", ch);
+            exception(interp, invalid_read_syntax, "unexpected character 0x%02X", ch);
     }
 }
 
@@ -1668,7 +1668,7 @@ void writeChar(Interpreter *interp, FILE *fd, char ch)
     if (fd == NULL) return;
 
     if(fputc(ch, fd) == EOF)
-        exception(interp, io_error, "failed to write character %c, errno: %s", ch, strerror(errno));
+        exception(interp, io_error, "failed to write character 0x%02X, errno: %s", ch, strerror(errno));
 }
 
 /** writeString - write string to file descriptor
@@ -2230,6 +2230,37 @@ Object *stringAppend(Interpreter *interp, Object **args, Object **env)
     return str;
 }
 
+/* encoded character size */
+size_t utf8_ec_size(char c)
+{
+    if ((c & 0x80) == 0) return 1;
+    if ((c & 0xC0) == 0xC0) return 2;
+    if ((c & 0xE0) == 0xE0) return 3;
+    if ((c & 0xF8) == 0xF8) return 4;
+    return 0;
+
+}
+
+/** utf8_char_index() - char offset or string index
+ *
+ * @returns: character offset into string corresponding to utf8
+ * encoded character at position index */
+size_t utf8_char_index(Interpreter *interp, char *string, size_t index, size_t *n_ec)
+{
+    size_t n = 0, i = 0, l = 0;
+
+    while (string[i] != '\0' && n < index) {
+        l = utf8_ec_size(string[i]);
+        if (l == 0)
+            exception(interp, invalid_value, "utf8_char_index(): string not utf-8 encoded");
+        i += l;
+        n++;
+    }
+    if (n_ec != NULL)
+        *n_ec = n;
+    return i;
+}
+
 /** (substring string [start [end]]) - return substring of string within range [start, end)
  *
  * @param string   Input string
@@ -2240,15 +2271,18 @@ Object *stringAppend(Interpreter *interp, Object **args, Object **env)
  * end-1. Length of string is default for *end*, 0 is default for
  * *start*.
  */
+#if 0
 Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
 {
-    int64_t start = 0, end, len;
+    size_t start = 0, end, len, newlen;
 
     FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string, "(substring string [start [end]]) - string");
 
-    len = strlen(FLISP_ARG_ONE->string);
-    if (len == 0)
+    if (*(FLISP_ARG_ONE->string) == '\0')
         return flisp_empty_string;
+
+    len = strlen(FLISP_ARG_ONE->string);
+    //(void)utf8_char_index(interp, FLISP_ARG_ONE->string, SIZE_MAX, &len);
     end = start + len;
 
     if (FLISP_HAS_ARG_TWO) {
@@ -2270,22 +2304,74 @@ Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
     if (end < 0 || end > len)
         exceptionWithObject(interp, FLISP_ARG_THREE, range_error,
                             "(substring string [start [end]]) - end out of range");
-    if (start > end)
-        exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
-                            "(substring string [start [end]]) - end > start");
     if (start == end)
         return flisp_empty_string;
 
-    int newlen = end - start;
-    char *buf = strdup(FLISP_ARG_ONE->string);
+    if (start > end)
+        exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
+                            "(substring string [start [end]]) - end > start");
+    newlen = end - start;
+    char *buf = strdup(FLISP_ARG_ONE->string+start);
     if (buf == NULL)
-        fl_fatal("OOM allocating buffer for (substring)\n",67);
-    Object *new = newStringWithLength(interp, buf+start, newlen+1);
+        exception(interp, out_of_memory, "OOM allocating buffer for (substring)\n");
+    Object *new = newStringWithLength(interp, buf, newlen+1);
     free(buf);
     new->string[newlen] = '\0';
 
     return new;
 }
+#else
+Object *stringSubstring(Interpreter *interp, Object **args, Object **env)
+{
+    size_t start = 0, end, len, ec_len;
+
+    FLISP_CHECK_TYPE(FLISP_ARG_ONE, type_string, "(substring string [start [end]]) - string");
+
+    if (*(FLISP_ARG_ONE->string) == '\0')
+        return flisp_empty_string;
+
+    (void)utf8_char_index(interp, FLISP_ARG_ONE->string, SIZE_MAX, &len);
+    end = start + len;
+
+    if (FLISP_HAS_ARG_TWO) {
+        FLISP_CHECK_TYPE(FLISP_ARG_TWO, type_integer, "(substring string [start [end]]) - start");
+        start = (FLISP_ARG_TWO->integer);
+        if (start < 0)
+            start = end + start;
+        if ((*args)->cdr->cdr != nil) {
+            FLISP_CHECK_TYPE(FLISP_ARG_THREE, type_integer, "(substring string [start [end]]) - end");
+            if (FLISP_ARG_THREE->integer < 0)
+                end = end + FLISP_ARG_THREE->integer;
+            else
+                end = FLISP_ARG_THREE->integer;
+        }
+    }
+    if (start < 0 || start > len)
+        exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
+                            "(substring string [start [end]]) - start out of range");
+    if (end < 0 || end > len)
+        exceptionWithObject(interp, FLISP_ARG_THREE, range_error,
+                            "(substring string [start [end]]) - end out of range");
+    if (start == end)
+        return flisp_empty_string;
+
+    if (start > end)
+        exceptionWithObject(interp, FLISP_ARG_TWO, range_error,
+                            "(substring string [start [end]]) - end > start");
+    ec_len = end - start;
+    start = utf8_char_index(interp, FLISP_ARG_ONE->string, start, NULL);
+    char *buf = strdup(FLISP_ARG_ONE->string+start);
+    if (buf == NULL)
+        exception(interp, out_of_memory, "OOM allocating buffer for (substring)\n");
+
+    len = utf8_char_index(interp, buf, ec_len, NULL);
+    Object *new = newStringWithLength(interp, buf, len+1);
+    free(buf);
+    new->string[len] = '\0';
+
+    return new;
+}
+#endif
 
 // (string-compare s1 s2)
 Object *stringCompare(Interpreter *interp, Object **args, Object **env)
@@ -2298,23 +2384,14 @@ Object *byteLength(Interpreter *interp, Object **args, Object **env)
     return newInteger(interp, strlen(FLISP_ARG_ONE->string));
 }
 
-size_t utf8char_size(char c)
-{
-    if ((c & 0x80) == 0) return 1;
-    if ((c & 0xC0) == 0xC0) return 2;
-    if ((c & 0xE0) == 0xE0) return 3;
-    if ((c & 0xF8) == 0xF8) return 4;
-    return 0;
-
-}
-
+#if 0
 Object *stringLength(Interpreter *interp, Object **args, Object **env)
 {
     size_t n = 0, l = 0;
     char *i = FLISP_ARG_ONE->string;
 
     while (*i != '\0') {
-        l = utf8char_size(*i);
+        l = utf8_ec_size(*i);
         if (l == 0)
             exceptionWithObject(interp, FLISP_ARG_ONE, invalid_value, "(string-length s) - s not utf-8 encoded");
         i += l;
@@ -2322,6 +2399,14 @@ Object *stringLength(Interpreter *interp, Object **args, Object **env)
     }
     return newInteger(interp, n);
 }
+#else
+Object *stringLength(Interpreter *interp, Object **args, Object **env)
+{
+    size_t n;
+    (void)utf8_char_index(interp, FLISP_ARG_ONE->string, SIZE_MAX, &n);
+    return newInteger(interp, n);
+}
+#endif
 
 /** (string-search needle haystack)
  *
