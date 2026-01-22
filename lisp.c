@@ -2413,11 +2413,21 @@ Object *stringLength(Interpreter *interp, Object **args, Object **env)
  */
 Object *stringSearch(Interpreter *interp, Object **args, Object **env)
 {
-    char *pos;
+    char *pos, *buf;
+    size_t n;
 
-    pos = strstr(FLISP_ARG_TWO->string, FLISP_ARG_ONE->string);
-    if (pos)
-        return newInteger(interp, pos - FLISP_ARG_TWO->string);
+    /* Note: inefficient */
+    buf = strdup(FLISP_ARG_TWO->string);
+    if (buf == NULL)
+        exception(interp, out_of_memory, "OOM allocating buffer for (substring)\n");
+    pos = strstr(buf, FLISP_ARG_ONE->string);
+    if (pos) {
+        *pos = '\0';
+        (void)utf8_char_index(interp, buf, SIZE_MAX, &n);
+        free(buf);
+        return newInteger(interp, n);
+    }
+    free(buf);
     return nil;
 }
 
