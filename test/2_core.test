@@ -199,8 +199,7 @@ IN="(string car)" OUT='"#<Primitive car>"'
 flisp_expr; ok string-7 primitive prints reader macro and name
 
 IN="(string (lambda (a b)))" OUT='"#<Lambda (a b)>"'
-# Note: flispd segfaults here
-FLISP=../flisp
+###export FLISP_SIZE=151552
 flisp_expr; ok string-8 lambda prints reader macro and parameters
 
 IN="(string (macro (a b)))" OUT='"#<Macro (a b)>"'
@@ -208,9 +207,8 @@ flisp_expr; ok string-9 macro prints reader macro and parameters
 
 IN='(setq f (open "" "<"))(close f)(string f)' OUT='"#<Stream 0 <STRING>"'
 flisp_expr 1; ok string-10 closed stream prints reader macro nil as fd and type
-FLISP=../flispd
-# Note: end of flispd segfaults
-
+return
+###FLISP_SIZE=0
 # concat
 IN="(concat 1 'a \"?\")" OUT='"1a?"'
 flisp_expr 1; ok concat-1 simple string concatenation

@@ -2546,9 +2546,6 @@ bool flisp_primitives_register(Interpreter *interp)
 #if DEBUG_GC
         && flisp_register_primitive(interp, "gc",            0,  0, nil,            primitiveGc)
         && flisp_register_primitive(interp, "gctrace",       0,  0, nil,            primitiveGcTrace)
-        && flisp_register_primitive(interp, "symbols",       0,  0, nil,            primitiveSymbols)
-        && flisp_register_primitive(interp, "global",        0,  0, nil,            primitiveGlobal)
-        && flisp_register_primitive(interp, "env",           0,  0, nil,            primitiveEnv)
 #endif
         && flisp_register_primitive(interp, "throw",         2,  3, nil,            primitiveThrow)
         && flisp_register_primitive(interp, "i+",            2,  2, type_integer,   integerAdd)
