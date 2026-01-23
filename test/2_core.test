@@ -196,16 +196,20 @@ IN="(string (cons 'a  2))" OUT='"a2"'
 flisp_expr 1; ok string-6 cons converts to concatenated strings of elements
 
 IN="(string car)" OUT='"#<Primitive car>"'
-flisp_expr 1; ok string 7 primitive prints reader macro and name
+flisp_expr; ok string-7 primitive prints reader macro and name
 
 IN="(string (lambda (a b)))" OUT='"#<Lambda (a b)>"'
-flisp_expr 1; ok string-8 lambda prints reader macro and parameters
+# Note: flispd segfaults here
+FLISP=../flisp
+flisp_expr; ok string-8 lambda prints reader macro and parameters
 
 IN="(string (macro (a b)))" OUT='"#<Macro (a b)>"'
-flisp_expr 1; ok string-9 macro prints reader macro and parameters
+flisp_expr; ok string-9 macro prints reader macro and parameters
 
 IN='(setq f (open "" "<"))(close f)(string f)' OUT='"#<Stream 0 <STRING>"'
 flisp_expr 1; ok string-10 closed stream prints reader macro nil as fd and type
+FLISP=../flispd
+# Note: end of flispd segfaults
 
 # concat
 IN="(concat 1 'a \"?\")" OUT='"1a?"'

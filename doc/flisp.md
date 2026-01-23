@@ -258,7 +258,7 @@ Double precission IEEE floating point number. Only available in fLisp
 interpreters with double support.
 
 <span class="dfn">string</span>  
-Character array.
+Character array. UTF-8 aware.
 
 <span class="dfn">cons</span>  
 Object holding two pointers to objects.
