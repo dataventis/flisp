@@ -46,6 +46,8 @@
 - Test more then one interpreter.
 - ? CSP between interpreters?
 
+## flisp 0.15
+- basic utf-8 support.
 
 ## flisp 0.14
 - GC starting with the first loaded symbol.

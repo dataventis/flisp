@@ -138,6 +138,17 @@
     <dt>Output buffer</dt>
     <dd>2048, <code>WRITE_FMT_BUFSIZ</code>, size of the output and message formatting buffer.</dd>
   </dl>
+  <h3>Unicode / UTF-8</h3>
+  <p><i>fLisp</i> has basic support for Unicode via the UTF-8 encoding.</p>
+  <p>The Lisp reader is agnostic of Unicode. Syntactic elements and symbols are ASCII only. An invalid symbol is
+  printed when if it is ASCII, otherwise the hex code is printed. This leads to several error messages when a non-ASCII
+  character is entered.</p>
+  <p>Strings are read in as-is, non-ASCII characters between double quotes are stored as they appear. The string
+  primitives: <code>string-length</code>, <code>string-search</code> and <code>substring</code> have a notion of the
+  size of UTF-8 character encodings and count the string indices and lenghts in Unicode characters instead of
+  bytes.</p>
+  <p>The primitive <code>byte-length</code> returns the length of the character array used to store the string.</p>
+  <p><em>Caution</em>: <i>fLisp</i> has no measures against incorrectly encoded UTF-8 string.</p>
   <nav>
     <p><a href="#toc">^</a></p>
     <h3>References</h3>

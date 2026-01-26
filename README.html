@@ -26,7 +26,8 @@ further experimentation].</li>
 <p>Size by version:</p>
 <pre><code>Version Binary  C-Lines/sloc/Files  Lisp-Lines/sloc/Files
 0.13    85584   3.6k/2.4k/6         373/272/3
-0.14    82984   3.7k/2.4k/7         610/355/5</code></pre>
+0.14    82984   3.7k/2.4k/7         610/355/5
+0.15    82984   3.8k/2.5k/7         358/166/5</code></pre>
 <h2 id="building">Building</h2>
 <p>fLisp only depends on the standard C libraries.</p>
 <p>The default Makefile target:</p>
@@ -45,10 +46,14 @@ libraries.</p>
 <pre><code>make install-dev</code></pre>
 <p>Installs the libraries, header files and pkg-config files.</p>
 <pre><code>make deb</code></pre>
-<p>Builds the Debian packages <code>flisp</code> and
-<code>flisp-dev</code>. The first installs the command line utilities,
-the Lisp libraries and the documentation, the second only the files
-required for development.</p>
+<p>Builds the following Debian packages:</p>
+<ul>
+<li><code>flisp</code> .. command line utilities.</li>
+<li><code>flisp-common</code> .. Lisp libraries</li>
+<li><code>flisp-doc</code> .. POSHdoc/HTML and Markdown
+documentation.</li>
+<li><code>flisp-dev</code> .. Development resources.</li>
+</ul>
 <h1 id="documentation">Documentation</h1>
 <p>Extensive documentation is available in the <code>doc</code>
 directory in POSHdoc/HTML and Markdown format.</p>

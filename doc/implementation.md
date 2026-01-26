@@ -113,7 +113,6 @@ list and then only accessed through the pointers inside the list.
 Thus, whenever we would have used a raw pointer to an object, we use a
 pointer to the pointer inside the list instead:
 
-
           function:              pointer to pointer inside list (Object **)
           |
           v
@@ -161,6 +160,27 @@ Input buffer
 Output buffer  
 2048, `WRITE_FMT_BUFSIZ`, size of the output and message formatting
 buffer.
+
+### Unicode / UTF-8
+
+*fLisp* has basic support for Unicode via the UTF-8 encoding.
+
+The Lisp reader is agnostic of Unicode. Syntactic elements and symbols
+are ASCII only. An invalid symbol is printed when if it is ASCII,
+otherwise the hex code is printed. This leads to several error messages
+when a non-ASCII character is entered.
+
+Strings are read in as-is, non-ASCII characters between double quotes
+are stored as they appear. The string primitives: `string-length`,
+`string-search` and `substring` have a notion of the size of UTF-8
+character encodings and count the string indices and lenghts in Unicode
+characters instead of bytes.
+
+The primitive `byte-length` returns the length of the character array
+used to store the string.
+
+*Caution*: *fLisp* has no measures against incorrectly encoded UTF-8
+string.
 
 [^](#toc)
 

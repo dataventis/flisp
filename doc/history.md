@@ -78,5 +78,6 @@ on demand:
 - Debian packages `flisp` and `flisp-dev` can be built.
 - *fLisp* can be embedded now in other applications without the need for
   the *Femto* or *fLisp* sources.
+- Basic Unicode / UTF-8 support is added.
 
 [^](#top)

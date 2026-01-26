@@ -35,6 +35,7 @@ Size by version:
 	Version	Binary	C-Lines/sloc/Files	Lisp-Lines/sloc/Files
 	0.13	85584	3.6k/2.4k/6			373/272/3
 	0.14    82984   3.7k/2.4k/7			610/355/5
+	0.15    82984   3.8k/2.5k/7         358/166/5
 
 
 ## Building
@@ -60,9 +61,12 @@ Installs the libraries, header files and pkg-config files.
 
 	make deb
 
-Builds the Debian packages `flisp` and `flisp-dev`.  The first
-installs the command line utilities, the Lisp libraries and the documentation, the second
-only the files required for development.
+Builds the following Debian packages:
+
+- `flisp` .. command line utilities.
+- `flisp-common` .. Lisp libraries
+- `flisp-doc` .. POSHdoc/HTML and Markdown documentation.
+- `flisp-dev` ..  Development resources.
 
 # Documentation
 
